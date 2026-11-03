@@ -34,7 +34,7 @@ export default function Inicio() {
 
       <section className="card">
         <b>Seu progresso na fase</b>
-        <Progresso nome="Academy" valor="78%" pct={78} />
+        <Progresso nome="Academy" valor="100%" pct={100} />
         <Progresso nome="Aulas ao vivo" valor="6 de 7" pct={86} />
         <Progresso nome="Avaliações" valor="4 de 5" pct={80} />
       </section>
