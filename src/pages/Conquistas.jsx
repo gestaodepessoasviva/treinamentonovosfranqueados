@@ -12,7 +12,8 @@ export default function Conquistas() {
           <div key={q.nome} className={`card ${i < conquistadas ? '' : 'lock'}`}>
             <div className="em">{q.emoji}</div>
             <b>{q.nome}</b>
-            <div className="mut sm">{i < conquistadas ? 'Conquistada' : 'Bloqueada'}</div>
+            <div className="mut sm">{q.quando}</div>
+            <div className="mut sm" style={{ marginTop: 4, fontWeight: 800 }}>{i < conquistadas ? 'Conquistada' : 'Bloqueada'}</div>
           </div>
         ))}
       </div>

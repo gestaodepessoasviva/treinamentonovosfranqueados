@@ -1,4 +1,4 @@
-# VIVA Academy: gamificação da Capacitação de Novos Franqueados
+# Jornada de Novos Franqueados VIVA: gamificação da Capacitação de Novos Franqueados
 
 Protótipo navegável da jornada gamificada do novo franqueado VIVA, em React + Vite.
 Os dados são de exemplo; cores, níveis, pontos e benefícios são provisórios.

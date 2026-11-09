@@ -1,5 +1,4 @@
-import imgMapa from '../assets/mapa-jornada.jpg'
-import { SOMBRAS } from '../data'
+import imgMapa from '../assets/mapa-campus.jpg'
 import { useApp } from '../state'
 import { Barra } from './ui'
 
@@ -10,10 +9,7 @@ export function Mapa({ compacto }) {
   const { s, statusEtapa, abrirEtapa } = useApp()
   return (
     <div className={`map${compacto ? ' sm' : ''}`}>
-      <img src={imgMapa} alt="Mapa ilustrado da jornada com 6 etapas" />
-      {s.etapas.map((_, i) => statusEtapa(i) === 'l' && (
-        <span key={`sd${i}`} className="sd" style={{ left: `${SOMBRAS[i][0]}%`, top: `${SOMBRAS[i][1]}%` }} />
-      ))}
+      <img src={imgMapa} alt="Mapa do campus com as 6 etapas da jornada" />
       {s.etapas.map((e, i) => {
         const t = statusEtapa(i)
         return (
@@ -36,7 +32,7 @@ export function MapaCard({ compacto }) {
       <b>🗺️ Mapa da sua jornada</b>
       <Mapa compacto={compacto} />
       <Barra pct={progresso} />
-      <div className="mut">{progresso}% da jornada concluída · Você está em: <b>{s.etapas[s.atual].nome}</b> (mês 3 de 6)</div>
+      <div className="mut">{progresso}% da jornada concluída · Você está em: <b>{s.etapas[s.atual].nome}</b></div>
       {compacto
         ? <button className="lk" style={{ margin: '6px 0 0' }} onClick={explorar}>Explorar mapa →</button>
         : <button className="go w" onClick={explorar}>Explorar mapa</button>}

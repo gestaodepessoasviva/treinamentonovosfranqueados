@@ -1,7 +1,30 @@
 import { MapaCard } from '../components/Mapa'
 import { Chip, Progresso } from '../components/ui'
-import { fmt, NIVEIS, USUARIO } from '../data'
-import { useApp } from '../state'
+import { fmt, NIVEIS } from '../data'
+import { dataBR, hojeISO, nomeAula, proximaAula, useApp } from '../state'
+
+const SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
+const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+
+// Card da próxima aula ao vivo da turma; abre o calendário.
+function ProximaAula() {
+  const { s, go } = useApp()
+  const a = proximaAula(s.turmas.find(t => t.codigo === s.turma))
+  if (!a) return null
+  const dias = Math.round((new Date(a.data + 'T12:00') - new Date(hojeISO() + 'T12:00')) / 864e5)
+  const quando = dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : `em ${dias} dias`
+  return (
+    <section className="pa">
+      <div className="dt"><b>{a.data.slice(8, 10)}</b><span>{MES[Number(a.data.slice(5, 7)) - 1]}</span></div>
+      <div className="pi">
+        <div className="pk">📅 Próxima aula ao vivo · {quando}</div>
+        <b>{nomeAula(a)}</b>
+        <div className="mut sm">{SEM[new Date(a.data + 'T12:00').getDay()]}, {dataBR(a.data).slice(0, 5)} · {a.horario || 'horário a confirmar'} · Google Meet</div>
+        <button className="lk" style={{ margin: '6px 0 0' }} onClick={() => go('calendario')}>Ver calendário da turma →</button>
+      </div>
+    </section>
+  )
+}
 
 function Missao() {
   const { toast } = useApp()
@@ -13,30 +36,27 @@ function Missao() {
         <div className="md">⏰ Prazo: 30/10 · 🎯 <b>+100 pontos</b></div>
         <button className="go2" onClick={() => toast('Na versão final: abre a trilha no Academy')}>Ir para a missão →</button>
       </section>
-      <section className="card"><div className="mut">Próxima aula</div><b>29/10 · 09h · Aula 7: Vendas</b></section>
+      <ProximaAula />
     </>
   )
 }
 
 export default function Inicio() {
-  const { s, nivel, setLayout } = useApp()
+  const { s, nivel } = useApp()
   return (
     <>
-      <div className="seg" role="group" aria-label="Teste de layout">
-        <button className={s.layout === 'A' ? 'on' : ''} onClick={() => setLayout('A')}>A · Missão no topo</button>
-        <button className={s.layout === 'B' ? 'on' : ''} onClick={() => setLayout('B')}>B · Mapa compacto</button>
-      </div>
       <div className="mut">Olá,</div>
-      <h1>{USUARIO.nome}</h1>
-      <div className="mut">{USUARIO.franquia} · Nível {nivel + 1} {NIVEIS[nivel].nome} · <b>{fmt(s.pontos)} pontos</b></div>
+      <h1>{s.nome}</h1>
+      <div className="mut">{s.franquia} · Nível {nivel + 1} {NIVEIS[nivel].nome} · <b>{fmt(s.pontos)} pontos</b></div>
 
-      {s.layout === 'A' ? <><Missao /><MapaCard /></> : <><MapaCard compacto /><Missao /></>}
+      <Missao />
+      <MapaCard />
 
       <section className="card">
         <b>Seu progresso na fase</b>
         <Progresso nome="Academy" valor="100%" pct={100} />
-        <Progresso nome="Aulas ao vivo" valor="6 de 7" pct={86} />
-        <Progresso nome="Avaliações" valor="4 de 5" pct={80} />
+        <Progresso nome="Aulas ao vivo" valor="86%" pct={86} />
+        <Progresso nome="Avaliações" valor="80%" pct={80} />
       </section>
       <section className="card">
         <b>Pendências</b>

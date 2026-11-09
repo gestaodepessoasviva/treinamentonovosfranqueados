@@ -30,7 +30,7 @@ export default function Jornada() {
         <b>{etapa.emoji} {etapa.nome}</b>{' '}
         <Chip c={t === 'd' ? 'cv' : t === 'l' ? 'cl' : 'cp'}>{STATUS[t]}</Chip>
         <Barra pct={pct} />
-        <div className="mut">{pct}% concluída{etapa.pts > 0 && t !== 'l' && ` · +${etapa.pts} pontos nesta etapa`}</div>
+        <div className="mut">{pct}% concluída</div>
         {etapa.atividades.map(([nome, st]) => (
           <div className="row" key={nome}><span>{t === 'l' ? '🔒' : ICONE_ATIV[st]} {nome}</span></div>
         ))}
