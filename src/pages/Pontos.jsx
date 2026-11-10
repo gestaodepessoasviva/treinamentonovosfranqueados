@@ -1,6 +1,50 @@
+import { useEffect, useRef, useState } from 'react'
 import { Barra } from '../components/ui'
-import { CONQUISTAS, ENTREGAS, EXTRAS, FATOR_ATRASO, fmt, NIVEIS, REGRAS, SEMESTRE } from '../data'
+import { ENTREGAS, EXTRAS, fmt, NIVEIS, REGRAS } from '../data'
 import { dataBR, nomeAula, prazoInfo, useApp } from '../state'
+
+const EMOJI_NIVEL = ['🌱', '🎒', '🤝', '🎯', '🎓']
+
+// Níveis em carrossel: faixas compridas e baixas, uma por vez, começando no nível atual.
+// As bolinhas embaixo mostram a posição e levam ao nível tocado.
+function Niveis({ nivel, pontos }) {
+  const trilho = useRef(null)
+  const [vendo, setVendo] = useState(nivel)
+  const irPara = (i, suave = true) => {
+    const el = trilho.current?.children[i]
+    if (el) trilho.current.scrollTo({ left: el.offsetLeft - trilho.current.offsetLeft, behavior: suave ? 'smooth' : 'auto' })
+  }
+  useEffect(() => { irPara(nivel, false); setVendo(nivel) }, [nivel])
+  const rolou = () => {
+    const t = trilho.current
+    const larg = t.children[0]?.offsetWidth || 1
+    setVendo(Math.min(NIVEIS.length - 1, Math.round(t.scrollLeft / (larg + 10))))
+  }
+  return (
+    <>
+      <div className="niveis" ref={trilho} onScroll={rolou}>
+        {NIVEIS.map((n, i) => {
+          const st = i < nivel ? 'done' : i === nivel ? 'cur' : 'next'
+          const prox = NIVEIS[i + 1]
+          const pct = st === 'done' ? 100 : st === 'next' ? 0 : prox ? Math.min(100, ((pontos - n.min) / (prox.min - n.min)) * 100) : 100
+          return (
+            <div className={`nv ${st}`} key={n.nome}>
+              <span className="nv-em">{EMOJI_NIVEL[i]}</span>
+              <span className="nv-n">Nível {i + 1}{st === 'cur' ? ' · atual' : st === 'done' ? ' · ✓ conquistado' : ''}</span>
+              <span className="nv-pts">{fmt(n.min)}+ pts</span>
+              <b>{n.nome}</b>
+              <span className="nv-d">{n.desc}</span>
+              <span className="nv-bar"><i style={{ width: `${pct}%` }} /></span>
+            </div>
+          )
+        })}
+      </div>
+      <div className="nv-dots">
+        {NIVEIS.map((n, i) => <button key={n.nome} className={i === vendo ? 'on' : ''} aria-label={`Ver nível ${i + 1}: ${n.nome}`} onClick={() => irPara(i)} />)}
+      </div>
+    </>
+  )
+}
 
 export default function Pontos() {
   const { s, nivel, go } = useApp()
@@ -25,18 +69,10 @@ export default function Pontos() {
       </section>
 
       <h2>Níveis</h2>
-      <section className="card">
-        {NIVEIS.map((n, i) => (
-          <div key={n.nome} className={`lv ${i < nivel ? 'done' : i === nivel ? 'cur' : ''}`}>
-            <b>{i < nivel ? '✓' : i + 1}</b>
-            <span>{n.nome}<br /><span className="mut sm">{n.desc}</span></span>
-            <small>{fmt(n.min)}+ pts</small>
-          </div>
-        ))}
-      </section>
+      <Niveis nivel={nivel} pontos={s.pontos} />
 
       <h2>Como acumular pontos</h2>
-      <section className="card">
+      <section className="card fx k1">
         <b>📚 Ações do curso</b>
         {REGRAS.map(r => (
           <div className="row" key={r.id}>
@@ -45,12 +81,9 @@ export default function Pontos() {
           </div>
         ))}
       </section>
-      <section className="card">
+      <section className="card fx k2">
         <b>🏗️ Entregas da implantação</b>
-        <div className="mut sm">
-          As mesmas 9 entregas para toda a turma, validadas pela Expansão no Sults. Pontuam quando concluídas durante
-          o semestre ({SEMESTRE}). Concluídas depois do prazo valem {FATOR_ATRASO * 100}% dos pontos.
-        </div>
+        <div className="mut sm">Pontuam quando concluídas no prazo estipulado.</div>
         {ENTREGAS.map(e => ({ ...e, p: prazoInfo(e.nome, minhaTurma) })).sort((a, b) => a.p.data.localeCompare(b.p.data)).map(({ nome, pontos, p }) => (
           <div className="row" key={nome}>
             <span>{nome}<br /><span className="mut sm">Prazo: {dataBR(p.data)} ({p.provisorio ? 'provisório' : p.regra}){p.aula && ` · ${nomeAula(p.aula)}`}</span></span>
@@ -58,7 +91,7 @@ export default function Pontos() {
           </div>
         ))}
       </section>
-      <section className="card">
+      <section className="card fx k3">
         <b>🚀 Pontos extras</b>
         {EXTRAS.map(e => (
           <div className="row" key={e.acao}>
@@ -66,18 +99,6 @@ export default function Pontos() {
             <span className="pl">+{e.pontos}</span>
           </div>
         ))}
-      </section>
-
-      <h2>Conquistas</h2>
-      <section className="card">
-        <div className="mut sm">Selos que você desbloqueia ao longo da jornada.</div>
-        {CONQUISTAS.map(q => (
-          <div className="row" key={q.nome}>
-            <span>{q.emoji} {q.nome}<br /><span className="mut sm">{q.quando}</span></span>
-            <span className="chip cp">{q.tipo}</span>
-          </div>
-        ))}
-        <button className="go" onClick={() => go('conq')}>Ver minhas conquistas</button>
       </section>
     </>
   )

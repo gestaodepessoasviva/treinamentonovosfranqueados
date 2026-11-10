@@ -9,9 +9,9 @@ function NovaTurma() {
   const vazio = { codigo: '', nome: '', cronograma: '', inicio: '', fim: '' }
   const [t, setT] = useState(vazio)
   const campo = k => e => setT({ ...t, [k]: e.target.value })
-  const salvar = e => {
+  const salvar = async e => {
     e.preventDefault()
-    const erro = adminSalvarTurma(t)
+    const erro = await adminSalvarTurma(t)
     if (erro) return toast(erro)
     setT(vazio)
   }

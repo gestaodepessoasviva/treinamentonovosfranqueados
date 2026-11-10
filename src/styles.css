@@ -135,3 +135,107 @@ details{background:var(--card);border:1px solid var(--line);border-radius:12px;p
 .login .card{box-shadow:0 12px 40px #0004;border:0}
 .login h1{text-align:center;font-size:22px}.login .sub{text-align:center}
 .login .wrap{width:100%}.login .wrap .card{box-sizing:border-box}
+
+/* Admin: Lançar pontos */
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;align-items:start}
+.lgrid label,.lgrid .campo{margin:0;font-weight:700;font-size:13px}
+.lgrid select{display:block;width:100%;height:44px;margin-top:4px;padding:0 10px;font-size:14px}
+.lgrid .cheio{grid-column:1/-1}
+.rot{display:block}
+.seg2{display:grid;grid-template-columns:1fr 1fr;height:44px;margin-top:4px;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg2 button{border:0;background:var(--card);color:var(--ink);font:600 14px Nunito,sans-serif;cursor:pointer}
+.seg2 button.on{background:var(--teal);color:#fff;font-weight:800}
+.multi-wrap{position:relative;margin-top:4px}
+.multi{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:44px;padding:5px 8px;border:2px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer}
+.multi.on{border-color:var(--teal)}
+.chipx{display:inline-flex;align-items:center;gap:2px;padding:2px 4px 2px 10px;border-radius:14px;background:var(--tealb);color:var(--tlink);font-size:13px;font-weight:800}
+.chipx button{border:0;background:none;color:inherit;font:800 15px/1 Nunito,sans-serif;padding:2px 4px;cursor:pointer}
+.multi .add{border:0;background:none;color:var(--mut);font:600 13px Nunito,sans-serif;cursor:pointer;padding:4px}
+.drop{margin-top:4px;padding:4px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);box-shadow:0 6px 16px #0002}
+.opc{display:grid;grid-template-columns:20px minmax(140px,220px) 1fr;align-items:center;gap:10px;margin:0;padding:7px 0;border-bottom:1px solid var(--line);font-weight:400;font-size:14px;cursor:pointer}
+.opc:last-child{border:0}.opc b{grid-column:2/4}.opc .nm{font-weight:700}
+.opc input{width:18px;height:18px;margin:0;accent-color:var(--teal)}
+.lanc .go:disabled{background:var(--line);color:var(--mut)}
+.tabela{overflow-x:auto}
+.tabela table{width:100%;border-collapse:collapse;font-size:14px}
+.tabela th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);padding:6px;border-bottom:2px solid var(--line);white-space:nowrap}
+.tabela td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tabela tr:last-child td{border-bottom:0}
+.tabela .acoes{flex-wrap:nowrap;justify-content:flex-end}
+.cr{background:#e7f0ff;color:#1c4fb8}.ce{background:var(--tealb);color:var(--tlink)}
+@media (max-width:640px){.lgrid{grid-template-columns:1fr}}
+
+/* Admin: Calendário */
+.cal-adm td:first-child{white-space:nowrap}
+.cal-adm .ed td{background:var(--tealb)}
+.cal-adm .ed input,.cal-adm .ed select{margin:2px 0;padding:6px 8px;font-size:13px}
+.cal-adm .ed input[type=number]{width:64px}
+.tg{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:800}
+.tg.tnf{background:#1A1A1A;color:#fff}.tg.fo{background:var(--line);color:var(--mut)}
+.prazos select{margin:0;padding:6px 8px;font-size:13px;width:auto;max-width:260px}
+.pill{display:inline-flex;border:2px solid var(--line);border-radius:8px;overflow:hidden}
+.pill button{border:0;background:var(--card);color:var(--ink);padding:4px 10px;font:600 12px Nunito,sans-serif;cursor:pointer}
+.pill button.on{background:var(--teal);color:#fff;font-weight:800}
+
+/* Missão, próxima aula e calendário: links */
+a.go2{display:inline-block;text-decoration:none}
+.mi2{margin-top:12px;padding:10px 12px;border-radius:12px;background:#ffffffb3;color:#111;font-size:14px;font-weight:600}
+.pa-acoes{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:8px}.pa-acoes .lk{margin:0}
+.go3{display:inline-block;padding:8px 14px;border-radius:10px;background:var(--teal);color:#fff;font-weight:800;font-size:14px;text-decoration:none}
+.balao .entrar{pointer-events:auto;display:inline-block;margin-top:6px;padding:5px 12px;border-radius:8px;background:#FC5B00;color:#fff;font-weight:800;text-decoration:none}
+.lk-meet{font-size:12px;font-weight:800;color:var(--tlink);text-decoration:none;white-space:nowrap}
+.cal-adm .ed input[aria-label="Link da aula"]{min-width:180px}
+
+
+/* Admin: conquistas */
+.cqs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.cq{display:flex;align-items:center;gap:10px;margin:0;padding:10px;border:2px solid var(--line);border-radius:12px;font-weight:400;cursor:pointer}
+.cq.on{border-color:var(--teal);background:var(--tealb)}
+.cq input{width:18px;height:18px;margin:0;flex:none;accent-color:var(--teal)}
+.cq-em{font-size:24px;flex:none}
+.cq-tot{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px 12px}
+.cq-tot>div{display:flex;align-items:center;gap:8px;font-size:14px}
+.cq-mini{display:block;margin-top:2px;font-size:16px;letter-spacing:2px}
+.row>.chip{align-self:center;flex:none}
+
+/* Níveis: faixas pêssego em carrossel (o atual em laranja VIVA) */
+.niveis{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 0 6px;scrollbar-width:none}
+.niveis::-webkit-scrollbar{display:none}
+.nv{flex:0 0 86%;scroll-snap-align:start;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:0 12px;padding:10px 14px;border-radius:14px;background:#fff1e6;border:1px solid #ffd2a8;color:#1A1A1A}
+.nv-em{grid-column:1;grid-row:1/3;font-size:26px}
+.nv-n{grid-column:2;grid-row:1;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#8a4a1c}
+.nv b{grid-column:2;grid-row:2;font-size:16px;line-height:1.2}
+.nv-pts{grid-column:3;grid-row:1/3;font-size:13px;font-weight:800;white-space:nowrap}
+.nv-d{grid-column:2/4;grid-row:3;font-size:12px;line-height:1.3;color:#8a4a1c}
+.nv-bar{grid-column:1/4;grid-row:4;height:5px;margin-top:8px;border-radius:4px;background:#ffd9bf;overflow:hidden}.nv-bar i{display:block;height:100%;background:#FC5B00}
+.nv.cur{background:#FC5B00;border-color:#FC5B00;color:#fff}.nv.cur .nv-n,.nv.cur .nv-d{color:#ffe7d6}.nv.cur .nv-bar{background:#ffffff55}.nv.cur .nv-bar i{background:#fff}
+.nv-dots{display:flex;justify-content:center;gap:5px;margin:2px 0 6px}
+.nv-dots button{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:#d0d0d0;cursor:pointer;transition:width .2s}
+.nv-dots button.on{width:20px;border-radius:4px;background:#FC5B00}
+@media (min-width:600px){.nv{flex-basis:70%}}
+
+/* Pontos: caixas brancas com faixa de cor na lateral */
+.card.fx{border:0;border-left:5px solid var(--c)}
+.k1{--c:#FC5B00}.k2{--c:#ffb27a}.k3{--c:#75767A}
+
+/* Guia: link para o PDF */
+.guia{display:flex;gap:14px;align-items:flex-start}.guia-em{font-size:34px;line-height:1}.guia p{margin:4px 0 10px}
+
+/* Níveis: cartões estreitos e altos (substitui as faixas largas acima) */
+.nv{flex:0 0 42%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:210px;padding:14px 12px;scroll-snap-align:start}
+.nv-em{order:1;font-size:30px;margin-bottom:6px}
+.nv-n{order:2}
+.nv b{order:3;font-size:16px}
+.nv-d{order:4;flex:1;margin-top:2px}
+.nv-pts{order:5;margin-top:8px}
+.nv-bar{order:6;width:100%;margin-top:6px}
+@media (min-width:600px){.nv{flex-basis:30%}}
+.guia-acoes{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}.guia-ok{font-size:13px;font-weight:800;color:var(--tlink)}
+
+/* Carregando / salvando na planilha */
+.carregando{min-height:100vh;display:grid;place-content:center;justify-items:center;gap:14px;color:var(--mut);font-weight:700}
+.ocupado{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:20px;background:#1A1A1A;color:#fff;font-size:14px;font-weight:700;box-shadow:0 6px 16px #0003}
+.gira{width:26px;height:26px;border-radius:50%;border:3px solid var(--line);border-top-color:#FC5B00;animation:gira .8s linear infinite}
+.ocupado .gira{width:16px;height:16px;border-width:2px;border-color:#ffffff44;border-top-color:#fff}
+@keyframes gira{to{transform:rotate(360deg)}}
+.login .lembrar{border:0;padding:10px 0 0;font-size:14px}

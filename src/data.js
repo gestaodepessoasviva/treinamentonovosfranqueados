@@ -4,7 +4,7 @@
 // Protótipo: a senha é conferida no navegador pelo hash SHA-256. Isso NÃO é seguro
 // para produção; na versão final o login de admin precisa ser validado num servidor.
 export const ADMIN = {
-  email: 'gestaodepessoas@gmail.com',
+  email: 'gestaodepessoas@vivaeventos.com.br',
   senhaSha256: '5a4e98e4a0a4280a6c5e3bbc335cbbec5491ff364c6742d4b92a545c02c4ecd8',
 }
 
@@ -21,7 +21,7 @@ export const TURMAS = [
   },
     // Calendário enviado pela coordenação. tipo: aula | tnf (presencial) | folga. Professor vazio = a confirmar.
     aulas: [
-      { id: 't11-01', tipo: 'aula', data: '2026-11-12', numero: 1, tema: 'Modelo de Negócios', professor: 'Everdan', horario: '14h' },
+      { id: 't11-01', tipo: 'aula', data: '2026-11-12', numero: 1, tema: 'Modelo de Negócios', professor: 'Everdan', horario: '14h', link: 'https://meet.google.com/qph-kgti-cce' },
       { id: 't11-02', tipo: 'aula', data: '2026-11-24', numero: 2, tema: 'Marketing', professor: 'Guilherme', horario: '14h' },
       { id: 't11-03', tipo: 'aula', data: '2026-11-26', numero: 3, tema: 'Marketing', professor: 'Guilherme', horario: '14h' },
       { id: 't11-04', tipo: 'aula', data: '2026-12-08', numero: 4, tema: 'Fornecedor', professor: '', horario: '14h' },
@@ -47,42 +47,36 @@ export const TURMAS = [
 ]
 
 // Turma de exemplo. `feitas` = quantas atividades do mapa já foram concluídas, em ordem.
-// `validadas` = entregas já validadas pela Expansão ([nome, situação]); `emValidacao` = aguardando ([nome, data de conclusão]).
-// `extras` = ações extras registradas pelo franqueado.
+// `validadas` = entregas já lançadas pela equipe ([nome, situação]).
+// `extras` = pontos extras já lançados pela equipe.
 // No login de franqueado, o protótipo entra sempre como a primeira da lista.
 export const FRANQUEADOS = [
   {
-    id: 'ana', nome: 'Ana Souza', franquia: 'VIVA Exemplo', email: 'ana@exemplo.com', whatsapp: '(98) 99999-0001', turma: 'T2026-11', feitas: 16, pontos: 995,
+    id: 'ana', nome: 'Ana Souza', franquia: 'VIVA Exemplo', email: 'ana@exemplo.com', whatsapp: '(98) 999990001', turma: 'T2026-11', feitas: 2, pontos: 995, conquistas: ['Largada'],
     validadas: [['Mapeamento de mercado', 'No prazo'], ['Parceiros e atléticas', 'Com atraso']],
-    emValidacao: [['Mapeamento de fornecedores', '2026-11-20'], ['Análise de concorrência', '2027-01-08']],
-    extras: [{ acao: 'Compartilhar um caso real na aula', obs: 'Aula 6: negociação com atlética', data: '15/12', status: 'aprovado' }],
+    extras: [{ acao: 'Compartilhar um caso real na aula', data: '15/12' }],
   },
   {
-    id: 'bruno', nome: 'Bruno Lima', franquia: 'VIVA São Luís', email: 'bruno@exemplo.com', whatsapp: '(98) 99999-0002', turma: 'T2026-11', feitas: 22, pontos: 1240,
+    id: 'bruno', nome: 'Bruno Lima', franquia: 'VIVA São Luís', email: 'bruno@exemplo.com', whatsapp: '(98) 999990002', turma: 'T2026-11', feitas: 14, pontos: 1240, conquistas: ['Largada', 'Visão de Mercado'],
     validadas: [['Mapeamento de mercado', 'No prazo'], ['Análise de concorrência', 'No prazo'], ['Mapeamento de fornecedores', 'No prazo'], ['Parceiros e atléticas', 'No prazo']],
-    emValidacao: [['CNPJ e alvará', '2027-01-25']],
-    extras: [
-      { acao: 'Compartilhar um caso real na aula', obs: 'Aula 8: primeiro contrato com turma de Medicina', data: '05/01', status: 'pendente' },
-      { acao: 'Participar do TNF', obs: 'Presente nos 6 dias', data: '23/01', status: 'pendente' },
-    ],
+    extras: [],
   },
   {
-    id: 'carla', nome: 'Carla Mendes', franquia: 'VIVA Teresina', email: 'carla@exemplo.com', whatsapp: '(86) 99999-0003', turma: 'T2026-11', feitas: 9, pontos: 610,
+    id: 'carla', nome: 'Carla Mendes', franquia: 'VIVA Teresina', email: 'carla@exemplo.com', whatsapp: '(86) 999990003', turma: 'T2026-11', feitas: 9, pontos: 610, conquistas: ['Largada'],
     validadas: [['Mapeamento de mercado', 'No prazo']],
-    emValidacao: [['Parceiros e atléticas', '2026-12-03']],
-    extras: [{ acao: 'Compartilhar um caso real na aula', obs: 'Aula 4: parceria com atlética de Direito', data: '02/12', status: 'pendente' }],
+    extras: [],
   },
   {
-    id: 'diego', nome: 'Diego Rocha', franquia: 'VIVA Belém', email: 'diego@exemplo.com', whatsapp: '(91) 99999-0004', turma: 'T2026-11', feitas: 4, pontos: 180,
-    validadas: [], emValidacao: [], extras: [],
+    id: 'diego', nome: 'Diego Rocha', franquia: 'VIVA Belém', email: 'diego@exemplo.com', whatsapp: '(91) 999990004', turma: 'T2026-11', feitas: 3, pontos: 180, conquistas: [],
+    validadas: [], extras: [],
   },
   {
-    id: 'elisa', nome: 'Elisa Martins', franquia: 'VIVA Fortaleza', email: 'elisa@exemplo.com', whatsapp: '(85) 99999-0005', turma: 'T2026-11', feitas: 28, pontos: 1520,
+    id: 'elisa', nome: 'Elisa Martins', franquia: 'VIVA Fortaleza', email: 'elisa@exemplo.com', whatsapp: '(85) 999990005', turma: 'T2026-11', feitas: 30, pontos: 1520, conquistas: ['Largada', 'Visão de Mercado', 'Presente no TNF', 'Portas Abertas'],
     validadas: [['Mapeamento de mercado', 'No prazo'], ['Análise de concorrência', 'No prazo'], ['Mapeamento de fornecedores', 'No prazo'], ['Parceiros e atléticas', 'No prazo'], ['CNPJ e alvará', 'No prazo'], ['Contratação da equipe', 'Com atraso'], ['Ponto comercial', 'No prazo']],
-    emValidacao: [['Construção e validação da OP', '2027-03-05']],
-    extras: [{ acao: 'Inaugurar a unidade na data planejada', obs: 'Inauguração em 10/02', data: '10/02', status: 'aprovado' }],
+    extras: [{ acao: 'Inaugurar a unidade na data planejada', data: '10/02' }],
   },
 ]
+
 
 export const SEMESTRE = '12/11/2026 a 31/03/2027'
 
@@ -111,25 +105,23 @@ export const FATOR_ATRASO = 0.5
 
 // Lista fixa para toda a turma. Validação pela Expansão no Sults.
 // O prazo segue a aula ligada no calendário da turma (admin > Calendário): "antes" = dia da aula,
-// "depois" = dia da próxima aula. `prazo` aqui é o mesmo prazo, usado se a turma não tiver calendário.
+// "depois" = dia da próxima aula. Sem aula ligada, vale `prazo` (último dia do mês do prazo).
 // A plataforma compara o prazo com a data de conclusão e sugere "No prazo" ou "Com atraso";
 // a equipe confirma ou ajusta na validação.
 export const ENTREGAS = [
-  { nome: 'Mapeamento de mercado', aula: '#1 Modelo de Negócios', mes: 'Nov', prazo: '2026-11-24', pontos: 60 },
-  { nome: 'Análise de concorrência', aula: '#7 Vendas', mes: 'Dez', prazo: '2026-12-17', pontos: 40 },
-  { nome: 'Mapeamento de fornecedores', aula: '#4 Fornecedor', mes: 'Dez', prazo: '2026-12-10', pontos: 60 },
-  { nome: 'Parceiros e atléticas', aula: '#3 Marketing', mes: 'Dez', prazo: '2026-12-08', pontos: 30 },
-  { nome: 'CNPJ e alvará', aula: '#11 Modelo de Negócios 2', mes: 'Jan', prazo: '2027-01-26', pontos: 40 },
-  { nome: 'Contratação da equipe', aula: '#12 Gestão de Pessoas', mes: 'Fev', prazo: '2027-02-16', pontos: 50 },
+  { nome: 'Mapeamento de mercado', aula: '#1 Modelo de Negócios', mes: 'Nov', prazo: '2026-11-30', pontos: 60 },
+  { nome: 'Análise de concorrência', aula: '#7 Vendas', mes: 'Dez', prazo: '2026-12-31', pontos: 40 },
+  { nome: 'Mapeamento de fornecedores', aula: '#4 Fornecedor', mes: 'Dez', prazo: '2026-12-31', pontos: 60 },
+  { nome: 'Parceiros e atléticas', aula: '#3 Marketing', mes: 'Dez', prazo: '2026-12-31', pontos: 30 },
+  { nome: 'CNPJ e alvará', aula: '#11 Modelo de Negócios 2', mes: 'Jan', prazo: '2027-01-31', pontos: 40 },
+  { nome: 'Contratação da equipe', aula: '#12 Gestão de Pessoas', mes: 'Fev', prazo: '2027-02-28', pontos: 50 },
   { nome: 'Ponto comercial', aula: 'sem aula ligada', mes: 'Fev', prazo: '2027-02-28', pontos: 40 },
-  { nome: 'Primeiras reuniões com turmas', aula: '#13 Atendimento', mes: 'Fev', prazo: '2027-02-23', pontos: 50 },
-  { nome: 'Construção e validação da OP', aula: '#5 Precificação de OP', mes: 'Dez', prazo: '2026-12-15', pontos: 50 },
+  { nome: 'Primeiras reuniões com turmas', aula: '#13 Atendimento', mes: 'Fev', prazo: '2027-02-28', pontos: 50 },
+  { nome: 'Construção e validação da OP', aula: '#5 Precificação de OP', mes: 'Dez', prazo: '2026-12-31', pontos: 50 },
 ]
 
 
 export const EXTRAS = [
-  { acao: 'Equipe com as trilhas do Academy concluídas', pontos: 40, max: 1 },
-  { acao: 'Participar do TNF', pontos: 50, max: 1 },
   { acao: 'Inaugurar a unidade na data planejada', pontos: 50, max: 1 },
   { acao: 'Fechar o primeiro fundo', pontos: 100, max: 1 },
   { acao: 'Compartilhar um caso real na aula', pontos: 15, max: 3 },
@@ -172,24 +164,81 @@ export const MENU = [
 
 // Extrato e notificações de exemplo da primeira franqueada.
 export const EXTRATO = [
-  { data: '19/12', texto: 'Disciplina concluída no prazo: Modelo de Negócio', valor: 40 },
-  { data: '17/12', texto: 'Aula ao vivo 6: presença', valor: 20 },
-  { data: '17/12', texto: 'Avaliação da aula 6: aprovada', valor: 10 },
-  { data: '15/12', texto: 'Caso real compartilhado na aula', valor: 15 },
-  { data: '12/12', texto: 'Entrega com atraso (50%): Parceiros e atléticas', valor: 15 },
-  { data: '28/11', texto: 'Entrega validada: Mapeamento de mercado', valor: 60 },
+  { data: '19/12', texto: 'Concluir uma disciplina no Academy + bônus de prazo: Modelo de Negócio', valor: 40, tipo: 'Programado' },
+  { data: '17/12', texto: 'Participar da aula ao vivo', aula: 'Aula ao vivo #7 · Vendas', valor: 20, tipo: 'Programado' },
+  { data: '17/12', texto: 'Passar na avaliação da aula', aula: 'Aula ao vivo #7 · Vendas', valor: 10, tipo: 'Programado' },
+  { data: '15/12', texto: 'Compartilhar um caso real na aula', aula: 'Aula ao vivo #6 · Vendas', valor: 15, tipo: 'Extra' },
+  { data: '12/12', texto: 'Entrega com atraso: Parceiros e atléticas', valor: 15, tipo: 'Programado' },
+  { data: '28/11', texto: 'Entrega no prazo: Mapeamento de mercado', valor: 60, tipo: 'Programado' },
 ]
+
+// Guia da Jornada em PDF no Google Drive. Enquanto estiver vazio, a página do Guia avisa que o link vem em breve.
+export const GUIA_LINK = ''
+
+// Links das trilhas no Academy.
+export const ACADEMY = 'https://academy.vivaeventos.com.br'
+const trilha = id => `${ACADEMY}/course/section.php?id=${id}`
 
 // Modelo das etapas. O status de cada atividade é montado por franqueado (state.jsx):
 // 0 = pendente, 1 = concluída, 2 = em andamento.
 // x / y = posição do marcador no mapa do campus (%).
+// Cada atividade: [nome, status inicial, detalhes]. Detalhes dizem o que a missão abre:
+//   link (Academy), aulas (ids do calendário), entrega (nome), tela (página do app) ou nada.
 export const ETAPAS = [
-  { nome: 'Boas-vindas', emoji: '🚩', x: 13.7, y: 85, atividades: [['Primeiro acesso', 1], ['Entrar no grupo de WhatsApp', 1], ['Receber o Guia do Franqueado', 1], ['Confirmar leitura do Guia', 1], ['Consultar o calendário da jornada', 1], ['Acessar o Academy', 1]] },
-  { nome: 'Implantação', emoji: '🧭', x: 26.3, y: 69.8, atividades: [['Academy: Método Empresarial', 1], ['Academy: Modelo de Negócio', 1], ['Academy: Marketing e Vendas', 1], ['Academy: Cultura VIVA e LGPD', 1], ['Aulas ao vivo da etapa', 1], ['Treinamento de Novos Franqueados', 1], ['Avaliação da fase', 1]] },
-  { nome: 'Inauguração', emoji: '🏠', x: 40.8, y: 62.5, atividades: [['Academy da etapa', 1], ['Aula de Relacionamento', 1], ['Aula de Atendimento', 1], ['2ª reunião comercial', 2], ['Missão de campo', 0], ['Avaliação da fase', 0]] },
-  { nome: 'Primeiro Fundo', emoji: '💰', x: 55.6, y: 60.8, atividades: [['Conteúdos específicos', 0], ['Acompanhamento do SAF', 0], ['SAF Produção', 0], ['Missão prática', 0], ['Pré-evento e 1º evento', 0], ['Avaliação da fase', 0]] },
-  { nome: 'Ativação do Evento', emoji: '🎪', x: 73.8, y: 59.7, atividades: [['Operação aplicada', 0], ['Fechamento do evento', 0], ['Transferência das margens (se mantida)', 0], ['Entregas finais', 0], ['Projeto integrador', 0]] },
-  { nome: 'Formatura', emoji: '🎓', x: 90.5, y: 57.7, atividades: [['Projeto concluído', 0], ['Avaliações concluídas', 0], ['Banca de aprovação final', 0], ['Jornada 100% concluída', 0]] },
+  { nome: 'Boas-vindas', emoji: '🚩', x: 13.7, y: 85, ate: 'até a 1ª aula (12/11)', atividades: [
+    ['Primeiro acesso à plataforma', 0, {}],
+    ['Entrar no grupo de WhatsApp da turma', 0, {}],
+    ['Ler o Guia da Jornada', 0, { tela: 'guia' }],
+    ['Consultar o calendário da turma', 0, { tela: 'calendario' }],
+    ['Acessar o Academy', 0, { link: ACADEMY }],
+  ] },
+  { nome: 'Implantação', emoji: '🧭', x: 26.3, y: 69.8, ate: 'da 1ª aula até o TNF', atividades: [
+    ['Academy: Modelo de Negócio', 0, { link: trilha(332), pontos: 40 }],
+    ['Aula ao vivo #1 · Modelo de Negócios', 0, { aulas: ['t11-01'] }],
+    ['Entrega: Mapeamento de mercado', 0, { entrega: 'Mapeamento de mercado' }],
+    ['Aulas ao vivo #2 e #3 · Marketing', 0, { aulas: ['t11-02', 't11-03'] }],
+    ['Entrega: Parceiros e atléticas', 0, { entrega: 'Parceiros e atléticas' }],
+    ['Aula ao vivo #4 · Fornecedor', 0, { aulas: ['t11-04'] }],
+    ['Entrega: Mapeamento de fornecedores', 0, { entrega: 'Mapeamento de fornecedores' }],
+    ['Aula ao vivo #5 · Precificação de OP', 0, { aulas: ['t11-05'] }],
+    ['Entrega: Construção e validação da OP', 0, { entrega: 'Construção e validação da OP' }],
+    ['Academy: Vendas', 0, { link: trilha(58), pontos: 40 }],
+    ['Aulas ao vivo #6 a #8 · Vendas', 0, { aulas: ['t11-06', 't11-07', 't11-08'] }],
+    ['Entrega: Análise de concorrência', 0, { entrega: 'Análise de concorrência' }],
+    ['Academy: Pós-vendas', 0, { link: trilha(239), pontos: 40 }],
+    ['Aulas ao vivo #9 e #10 · Pós-vendas', 0, { aulas: ['t11-09', 't11-10'] }],
+    ['Academy: Cultura', 0, { link: trilha(309), pontos: 40 }],
+    ['Academy: Administrativo-financeiro', 0, { link: trilha(208), pontos: 40 }],
+    ['Aula ao vivo #11 · Modelo de Negócios 2', 0, { aulas: ['t11-11'] }],
+    ['Entrega: CNPJ e alvará', 0, { entrega: 'CNPJ e alvará' }],
+    ['Treinamento de Novos Franqueados (18 a 23/01)', 0, { aulas: ['t11-12'], tnf: true }],
+    ['Prova e banca do período', 0, { pontos: 100 }],
+  ] },
+  { nome: 'Inauguração', emoji: '🏠', x: 40.8, y: 62.5, ate: 'Gestão de Pessoas e Atendimento', atividades: [
+    ['Academy: Gestão de Pessoas', 0, { link: trilha(204), pontos: 40 }],
+    ['Aula ao vivo #12 · Gestão de Pessoas', 0, { aulas: ['t11-13'] }],
+    ['Entrega: Contratação da equipe', 0, { entrega: 'Contratação da equipe' }],
+    ['Academy: Atendimento', 0, { link: trilha(205), pontos: 40 }],
+    ['Aulas ao vivo #13 e #14 · Atendimento', 0, { aulas: ['t11-15', 't11-16'] }],
+    ['Entrega: Primeiras reuniões com turmas', 0, { entrega: 'Primeiras reuniões com turmas' }],
+    ['Entrega: Ponto comercial', 0, { entrega: 'Ponto comercial' }],
+    ['Inaugurar a unidade', 0, {}],
+    ['Prova e banca do período', 0, { pontos: 100 }],
+  ] },
+  { nome: 'Primeiro Fundo', emoji: '💰', x: 55.6, y: 60.8, ate: 'Relacionamento', atividades: [
+    ['Academy: Performance Rede VIVA', 0, { link: trilha(382), pontos: 40 }],
+    ['Aulas ao vivo #15 a #17 · Relacionamento', 0, { aulas: ['t11-17', 't11-18', 't11-19'] }],
+    ['Fechar o primeiro fundo', 0, {}],
+  ] },
+  { nome: 'Ativação do Evento', emoji: '🎪', x: 73.8, y: 59.7, ate: 'Produção', atividades: [
+    ['Aulas ao vivo #18 e #19 · Produção', 0, { aulas: ['t11-20', 't11-21'] }],
+    ['Projeto integrador', 0, { pontos: 200 }],
+    ['Prova e banca do período', 0, { pontos: 100 }],
+  ] },
+  { nome: 'Formatura', emoji: '🎓', x: 90.5, y: 57.7, ate: 'quando concluir tudo', atividades: [
+    ['Jornada concluída', 0, {}],
+  ] },
 ]
+
 
 export const fmt = n => n.toLocaleString('pt-BR')

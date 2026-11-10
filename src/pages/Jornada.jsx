@@ -7,7 +7,7 @@ const STATUS = { d: 'Concluída', c: 'Em andamento', a: 'Disponível', l: 'Bloqu
 const ICONE_ATIV = ['○', '✅', '🔥']
 
 export default function Jornada() {
-  const { s, statusEtapa, abrirEtapa, avancar, reiniciar, go } = useApp()
+  const { s, statusEtapa, abrirEtapa, go } = useApp()
   const i = s.selecionada
   const etapa = s.etapas[i]
   const t = statusEtapa(i)
@@ -30,17 +30,12 @@ export default function Jornada() {
         <b>{etapa.emoji} {etapa.nome}</b>{' '}
         <Chip c={t === 'd' ? 'cv' : t === 'l' ? 'cl' : 'cp'}>{STATUS[t]}</Chip>
         <Barra pct={pct} />
-        <div className="mut">{pct}% concluída</div>
+        <div className="mut">{pct}% concluída{etapa.ate && ` · ${etapa.ate}`}</div>
+        <div className="mut sm">O mapa avança sozinho conforme as atividades são concluídas.</div>
         {etapa.atividades.map(([nome, st]) => (
           <div className="row" key={nome}><span>{t === 'l' ? '🔒' : ICONE_ATIV[st]} {nome}</span></div>
         ))}
         {i === 0 && <button className="go" onClick={() => go('guia')}>📖 Abrir Guia da Jornada</button>}
-      </section>
-      <section className="card">
-        <b>🧪 Teste o mapa</b>
-        <div className="mut">Só no protótipo: cada clique conclui a próxima atividade da etapa atual e o mapa se atualiza.</div>
-        <button className="go" onClick={avancar}>Concluir próxima atividade</button>
-        <button className="lk" onClick={reiniciar}>Reiniciar</button>
       </section>
     </>
   )

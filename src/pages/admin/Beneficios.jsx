@@ -8,9 +8,9 @@ function FormBeneficio({ inicial, onPronto }) {
   const { adminSalvarBeneficio, toast } = useApp()
   const [b, setB] = useState(inicial ? { emoji: inicial.emoji, nome: inicial.nome, descricao: inicial.descricao || '', custo: inicial.custo, estoque: inicial.estoque } : VAZIO)
   const campo = k => e => setB({ ...b, [k]: e.target.value })
-  const salvar = e => {
+  const salvar = async e => {
     e.preventDefault()
-    const erro = adminSalvarBeneficio(b, inicial?.id)
+    const erro = await adminSalvarBeneficio(b, inicial?.id)
     if (erro) return toast(erro)
     if (!inicial) setB(VAZIO)
     onPronto?.()

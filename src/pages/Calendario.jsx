@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { dataBR, ehAula, hojeISO, nomeAula, proximaAula, useApp } from '../state'
 
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
@@ -18,13 +18,16 @@ function Detalhe({ e }) {
     <>
       <b>{nomeAula(e)}</b>
       <div className="bmut">{e.professor ? `Professor(a): ${e.professor}` : 'Professor(a) a confirmar'}</div>
-      <div>{diaSem(e.data)}, {dataBR(e.data).slice(0, 5)} · {e.horario || 'horário a confirmar'} · Google Meet</div>
+      <div>{diaSem(e.data)}, {dataBR(e.data).slice(0, 5)} · {e.horario || '14h'} · Google Meet</div>
+      {e.link && <a className="entrar" href={e.link} target="_blank" rel="noreferrer">Entrar na aula ↗</a>}
     </>
   )
 }
 
 export default function Calendario() {
-  const { s } = useApp()
+  const { s, concluirMinha } = useApp()
+  // Abrir o calendário conclui a atividade "Consultar o calendário da turma".
+  useEffect(() => { concluirMinha('Consultar o calendário da turma') }, [])
   const turma = s.turmas.find(t => t.codigo === s.turma)
   const eventos = [...(turma?.aulas || [])].filter(e => e.data).sort((a, b) => a.data.localeCompare(b.data))
   const prox = proximaAula(turma)
@@ -66,7 +69,8 @@ export default function Calendario() {
   return (
     <>
       <h1>Calendário da turma</h1>
-      <div className="mut">{turma.nome} · {qtdAulas} aulas ao vivo · toque numa data marcada para ver a aula</div>
+      <div className="mut">{turma.nome} · {qtdAulas} aulas ao vivo, sempre às 14h</div>
+      <div className="mut">Toque numa data marcada para ver a aula.</div>
       <div className="cal" ref={cal}>
         <div className="meses">
           {meses.map(mes => {

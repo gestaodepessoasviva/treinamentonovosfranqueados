@@ -1,0 +1,8 @@
+node_modules
+dist
+Documentos
+automacao
+prototipo
+*.log
+.env
+.env.local

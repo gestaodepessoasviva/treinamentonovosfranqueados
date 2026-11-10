@@ -1,6 +1,8 @@
+import { GUIA_LINK } from '../data'
+import { useApp } from '../state'
 import imgMapa from '../assets/mapa-campus.jpg'
 
-// Conteúdo do "Guia da Jornada do Franqueado - Universidade VIVA" (pasta Documentos).
+// Conteúdo do "Guia da Jornada" (PDF na pasta Documentos) + link para o PDF no Drive e confirmação de leitura.
 
 const Item = ({ titulo, aberto, children }) => (
   <details open={aberto}><summary>{titulo}</summary><div style={{ marginTop: 8 }}>{children}</div></details>
@@ -58,11 +60,31 @@ const FAQ = [
   ['O acompanhamento acaba na formatura?', 'Não. Depois da formatura, a equipe continua acompanhando os primeiros marcos da sua franquia.'],
 ]
 
+const LER = 'Ler o Guia da Jornada'
+
 export default function Guia() {
+  const { s, concluirMinha } = useApp()
+  const lido = s.etapas?.some(e => e.atividades.some(a => a[0] === LER && a[1] === 1))
   return (
     <>
       <h1>Guia da Jornada</h1>
       <p className="mut">Universidade VIVA · Formação de Novos Franqueados · Turma novembro 2026 a março 2027</p>
+      <section className="card guia">
+        <div className="guia-em">📖</div>
+        <div>
+          <b>Guia em PDF</b>
+          <p className="mut sm">O mesmo conteúdo desta página, no arquivo para baixar ou imprimir.</p>
+          <div className="guia-acoes">
+            {GUIA_LINK
+              ? <a className="go3" href={GUIA_LINK} target="_blank" rel="noreferrer">Abrir o Guia (PDF) ↗</a>
+              : <span className="mut sm"><b>O link do PDF vai aparecer aqui em breve.</b></span>}
+            {s.etapas && (lido
+              ? <span className="guia-ok">✅ Leitura confirmada</span>
+              : <button className="mini ok" onClick={() => concluirMinha(LER)}>Li o Guia ✓</button>)}
+          </div>
+        </div>
+      </section>
+
 
       <Item titulo="1. Sua turma: datas principais" aberto>
         {DATAS.map(([cor, data, texto]) => (
