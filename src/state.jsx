@@ -452,7 +452,8 @@ export function AppProvider({ children }) {
 
   // ===== Modo planilha: os dados vêm do serviço e cada ação grava na planilha =====
   // Recarrega tudo do serviço. `inicio` = logo após o login (abre a tela inicial).
-  const carregar = async (perfil, inicio) => {
+  // `pacote`: dados do franqueado que o serviço já devolveu (login e gravações), para não buscar de novo.
+  const carregar = async (perfil, inicio, pacote) => {
     if (perfil === 'Admin') {
       const d = await chamar('painel')
       const turmas = d.turmas.map(t => montarTurma(t, d.calendario.filter(a => a['Código da turma*'] === t['Código da turma*']), d.prazos.filter(p => p['Código da turma*'] === t['Código da turma*'])))
@@ -463,7 +464,7 @@ export function AppProvider({ children }) {
         sessao: 'admin', ...(inicio ? { tela: 'admin', adminSel: null } : { tela: p.tela }),
       }))
     } else {
-      const pc = await chamar('meusDados')
+      const pc = pacote || await chamar('meusDados')
       const turma = montarTurma(pc.turma, pc.calendario, pc.prazos)
       const f = montarFranqueado(pc, turma)
       set(() => ({ turmas: [turma], franqueados: [f], beneficios: (pc.beneficios || []).map(montarBeneficio), sessao: f.id, ...(inicio ? { tela: 'inicio', selecionada: atualDe(f.etapas) } : {}) }))
@@ -474,8 +475,9 @@ export function AppProvider({ children }) {
   const gravar = async (fn, ok) => {
     set({ ocupado: true })
     try {
-      await fn()
-      await carregar(s.sessao === 'admin' ? 'Admin' : 'Franqueado')
+      const r = await fn()
+      const perfil = s.sessao === 'admin' ? 'Admin' : 'Franqueado'
+      await carregar(perfil, false, perfil === 'Franqueado' && r && r.perfil && r.calendario ? r : undefined)
       if (ok) toast(ok)
     } catch (e) {
       if (!lerSessao()) setS(estadoInicial())
@@ -506,7 +508,7 @@ export function AppProvider({ children }) {
         const r = await chamar('login', { usuario, senha, lembrar })
         salvarSessao({ token: r.token, perfil: r.perfil }, lembrar)
         if (r.criarSenha) return set({ criarSenha: true })
-        await carregar(r.perfil, true)
+        await carregar(r.perfil, true, r.pacote || undefined)
       } catch (e) {
         toast(e.message)
       } finally {
@@ -519,9 +521,9 @@ export function AppProvider({ children }) {
     criarMinhaSenha: async nova => {
       set({ ocupado: true })
       try {
-        await chamar('trocarSenha', { nova })
+        const pc = await chamar('trocarSenha', { nova })
         set({ criarSenha: false })
-        await carregar('Franqueado', true)
+        await carregar('Franqueado', true, pc && pc.perfil ? pc : undefined)
         toast('Senha criada! Use-a nos próximos acessos.')
       } catch (e) {
         if (!lerSessao()) setS(estadoInicial())
@@ -537,7 +539,7 @@ export function AppProvider({ children }) {
     },
     concluirMinha: async nome => {
       if (!eu || eu.etapas.some(e => e.atividades.some(a => a[0] === nome && a[1] === 1))) return
-      try { await chamar('concluirAtividade', { atividade: nome }); await carregar('Franqueado') } catch { /* tenta de novo na próxima vez */ }
+      try { const pc = await chamar('concluirAtividade', { atividade: nome }); await carregar('Franqueado', false, pc) } catch { /* tenta de novo na próxima vez */ }
     },
     trocar: b => comAviso(() => chamar('trocar', { codigo: b.id }), `Troca confirmada! 🎁 ${b.nome}`),
 

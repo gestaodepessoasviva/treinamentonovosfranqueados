@@ -1,5 +1,6 @@
 import logo from './assets/logo-viva-branco.png'
 import Header from './components/Header'
+import PaginaNav from './components/PaginaNav'
 import Toast from './components/Toast'
 import AdminBeneficios from './pages/admin/Beneficios'
 import Calendario from './pages/admin/Calendario'
@@ -64,6 +65,7 @@ export default function App() {
       <main className="com-lado">
         {s.tela !== 'inicio' && <button className="back so-cel" onClick={() => go('inicio')}>← Início</button>}
         <Tela />
+        <PaginaNav />
       </main>
       {ocupado}
       <Toast />

@@ -1,6 +1,5 @@
 import { Mapa } from '../components/Mapa'
 import { Barra, Chip } from '../components/ui'
-import { useRef } from 'react'
 import { useApp } from '../state'
 
 const ICONE_CHIP = { d: '✅', c: '🔥', a: '○', l: '🔒' }
@@ -9,9 +8,6 @@ const ICONE_ATIV = ['○', '✅', '🔥']
 
 export default function Jornada() {
   const { s, statusEtapa, abrirEtapa } = useApp()
-  const cartao = useRef(null)
-  // Troca de etapa pelos botões: mostra o cartão da etapa nova, sem voltar ao topo da página.
-  const irPara = k => { abrirEtapa(k); requestAnimationFrame(() => cartao.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })) }
   const i = s.selecionada
   const etapa = s.etapas[i]
   const t = statusEtapa(i)
@@ -30,7 +26,7 @@ export default function Jornada() {
           </button>
         ))}
       </div>
-      <section className="card etp-card" ref={cartao}>
+      <section className="card etp-card">
         <b>{etapa.emoji} {etapa.nome}</b>{' '}
         <Chip c={t === 'd' ? 'cv' : t === 'l' ? 'cl' : 'cp'}>{STATUS[t]}</Chip>
         <Barra pct={pct} />
@@ -40,13 +36,6 @@ export default function Jornada() {
           <div className="row" key={nome}><span>{t === 'l' ? '🔒' : ICONE_ATIV[st]} {nome}</span></div>
         ))}
       </section>
-      <nav className="etp-nav" aria-label="Navegar entre as etapas">
-        {i > 0
-          ? <button onClick={() => irPara(i - 1)}><small>← Etapa anterior</small>{s.etapas[i - 1].nome}</button>
-          : <span />}
-        {i < s.etapas.length - 1 &&
-          <button className="n" onClick={() => irPara(i + 1)}><small>Próxima etapa →</small>{s.etapas[i + 1].nome}</button>}
-      </nav>
     </>
   )
 }

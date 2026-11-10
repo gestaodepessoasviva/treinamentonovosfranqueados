@@ -416,10 +416,17 @@ function temSenhaPropria(email) {
 
 function senhaFranqueadoConfere(email, senha) {
   const ac = acessoDe(email)
-  if (ac && ac['Senha (hash)']) return hashSenha(senha, ac['Sal']) === ac['Senha (hash)']
-  const inicial = PropertiesService.getScriptProperties().getProperty('SENHA_INICIAL_HASH')
+  if (ac && ac['Senha (hash)']) {
+    const ok = senhaConfere(senha, ac['Sal'], ac['Senha (hash)'])
+    if (ok === 'atualizar') atualizar('Acessos', ac._linha, { 'Senha (hash)': hashSenha(senha, ac['Sal']) })
+    return !!ok
+  }
+  const props = PropertiesService.getScriptProperties()
+  const inicial = props.getProperty('SENHA_INICIAL_HASH')
   if (!inicial) throw new Error('O acesso dos franqueados ainda não foi liberado. Fale com a equipe.')
-  return hashSenha(senha, SAL_INICIAL) === inicial
+  const ok = senhaConfere(senha, SAL_INICIAL, inicial)
+  if (ok === 'atualizar') props.setProperty('SENHA_INICIAL_HASH', hashSenha(senha, SAL_INICIAL))
+  return !!ok
 }
 
 function criarAdmin() {
@@ -448,10 +455,25 @@ function segredo() {
   return props.getProperty('SEGREDO')
 }
 
+// Hash da senha: HMAC-SHA256 com o segredo do script (que não fica na planilha) e sal próprio de cada pessoa.
+// Formato "v2$...". Hashes antigos (1500 voltas de SHA-256, bem mais lentos) continuam aceitos e são trocados no login.
 function hashSenha(senha, sal) {
+  const chave = segredo()
+  let h = sal + '|' + senha
+  for (let i = 0; i < 20; i++) h = hex(Utilities.computeHmacSha256Signature(h, chave))
+  return 'v2$' + h
+}
+function hashAntigo(senha, sal) {
   let h = sal + '|' + senha + '|' + segredo()
   for (let i = 0; i < 1500; i++) h = hex(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, h, Utilities.Charset.UTF_8))
   return h
+}
+// Confere a senha com o hash guardado. Devolve false, true ou 'atualizar' (certa, mas no formato antigo).
+function senhaConfere(senha, sal, guardado) {
+  guardado = String(guardado || '')
+  if (!guardado) return false
+  if (guardado.startsWith('v2$')) return hashSenha(senha, sal) === guardado
+  return hashAntigo(senha, sal) === guardado ? 'atualizar' : false
 }
 
 function acessoDe(email) {
@@ -514,8 +536,9 @@ const ACOES_PUBLICAS = {
     checarTentativas(usuario)
     const ac = acessoDe(usuario)
     if (ac && ac['Perfil'] === 'Admin') {
-      if (hashSenha(senha, ac['Sal']) !== ac['Senha (hash)']) { errouSenha(usuario); throw new Error('Usuário ou senha incorretos.') }
-      atualizar('Acessos', ac._linha, { 'Último acesso': new Date() })
+      const ok = senhaConfere(senha, ac['Sal'], ac['Senha (hash)'])
+      if (!ok) { errouSenha(usuario); throw new Error('Usuário ou senha incorretos.') }
+      atualizar('Acessos', ac._linha, { 'Último acesso': new Date(), ...(ok === 'atualizar' ? { 'Senha (hash)': hashSenha(senha, ac['Sal']) } : {}) })
       return { token: emitirToken(usuario, 'Admin', lembrar), perfil: 'Admin' }
     }
     const f = ler('Franqueados').find(x => x['Perfil*'] !== 'Admin' && String(x['E-mail*']).trim().toLowerCase() === usuario)
@@ -533,7 +556,8 @@ const ACOES_PUBLICAS = {
     if (!ler('Atividades').some(a => String(a['E-mail*']).toLowerCase() === email && a['Atividade*'] === 'Primeiro acesso à plataforma')) {
       inserir('Atividades', { 'E-mail*': email, 'Atividade*': 'Primeiro acesso à plataforma', 'Data*': hojeISO(), 'Marcado por': 'Plataforma' })
     }
-    return { token: emitirToken(email, 'Franqueado', lembrar), perfil: 'Franqueado', criarSenha: !temSenhaPropria(email) }
+    const criarSenha = !temSenhaPropria(email)
+    return { token: emitirToken(email, 'Franqueado', lembrar), perfil: 'Franqueado', criarSenha, pacote: criarSenha ? null : pacoteDoFranqueado(email) }
   },
 }
 
@@ -546,7 +570,7 @@ const ACOES_FRANQUEADO = {
     const ac = acessoDe(u.email)
     if (ac) atualizar('Acessos', ac._linha, { 'Foto': foto })
     else inserir('Acessos', { 'E-mail': u.email, 'Perfil': 'Franqueado', 'Último acesso': '', 'Foto': foto })
-    return { ok: true }
+    return pacoteDoFranqueado(u.email)
   },
   // Primeiro acesso: cria a senha. Depois: troca, informando a senha atual.
   trocarSenha: (u, { nova, atual }) => {
@@ -557,9 +581,9 @@ const ACOES_FRANQUEADO = {
       if (!senhaFranqueadoConfere(u.email, String(atual || ''))) { errouSenha(u.email); throw new Error('Senha atual incorreta.') }
     }
     const inicial = PropertiesService.getScriptProperties().getProperty('SENHA_INICIAL_HASH')
-    if (inicial && hashSenha(nova, SAL_INICIAL) === inicial) throw new Error('Escolha uma senha diferente da senha inicial.')
+    if (inicial && senhaConfere(nova, SAL_INICIAL, inicial)) throw new Error('Escolha uma senha diferente da senha inicial.')
     definirSenha(u.email, nova, 'Franqueado')
-    return { ok: true }
+    return pacoteDoFranqueado(u.email)
   },
   meusDados: u => pacoteDoFranqueado(u.email),
   concluirAtividade: (u, { atividade }) => {
@@ -688,17 +712,20 @@ const ACOES_ADMIN = {
   },
 }
 
+const SO_LEITURA_ACOES = ['meusDados', 'painel']
+const talvezComTrava = (acao, fn) => (SO_LEITURA_ACOES.includes(acao) ? fn() : comTrava(fn))
+
 function rotear(req) {
   if (ACOES_PUBLICAS[req.acao]) return comTrava(() => ACOES_PUBLICAS[req.acao](req))
   const u = lerToken(req.token)
   if (ACOES_FRANQUEADO[req.acao]) {
     if (u.perfil === 'Admin') throw new Error('Esta ação é do franqueado.')
     if (req.acao !== 'trocarSenha' && !temSenhaPropria(u.email)) throw new Error('Crie sua senha para continuar.')
-    return comTrava(() => ACOES_FRANQUEADO[req.acao](u, req))
+    return talvezComTrava(req.acao, () => ACOES_FRANQUEADO[req.acao](u, req))
   }
   if (ACOES_ADMIN[req.acao]) {
     if (u.perfil !== 'Admin') throw new Error('Acesso só para a equipe.')
-    return comTrava(() => ACOES_ADMIN[req.acao](u, req))
+    return talvezComTrava(req.acao, () => ACOES_ADMIN[req.acao](u, req))
   }
   throw new Error('Ação desconhecida: ' + req.acao)
 }
