@@ -7,6 +7,46 @@ const SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
 const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 const diaSem = iso => SEM[new Date(iso + 'T12:00').getDay()]
 
+// Progresso real na fase atual (na Boas-vindas, mostra a Implantação, que é a primeira fase com aulas):
+//   - Academy: % da trilha da fase no Academy (importado da IMPORTAÇÃO ACADEMY);
+//   - Aulas ao vivo: presenças nas aulas da fase que já aconteceram;
+//   - Avaliações: avaliação de cada aula já dada + prova do período no Academy + projeto integrador (quando a fase tem).
+function ProgressoFase() {
+  const { s } = useApp()
+  const fase = Math.max(s.atual, 1)
+  const etapa = s.etapas[fase]
+  if (!etapa) return null
+  const turma = s.turmas.find(t => t.codigo === s.turma)
+  const ativs = etapa.atividades
+  // Academy
+  const trilhas = ativs.filter(a => a[0].startsWith('Academy: '))
+  const pctAcademy = s.academy && s.academy[fase] !== undefined
+    ? Math.round(s.academy[fase])
+    : (trilhas.length ? Math.round(trilhas.filter(a => a[1] === 1).length / trilhas.length * 100) : 0)
+  // Aulas da fase que já aconteceram (o TNF não conta)
+  const ids = ativs.flatMap(a => { const m = metaDe(fase, a[0]); return m.aulas && !m.tnf ? m.aulas : [] })
+  const hoje = hojeISO()
+  const dadas = ids.filter(id => { const a = turma?.aulas.find(x => x.id === id); return a && a.data <= hoje })
+  const feitaNoMapa = id => ativs.some(a => metaDe(fase, a[0]).aulas?.includes(id) && a[1] === 1)
+  const presente = id => (s.presencas ? s.presencas.includes(id) : feitaNoMapa(id))
+  const avaliada = id => (s.avaliadas ? s.avaliadas.includes(id) : feitaNoMapa(id))
+  const nPres = dadas.filter(presente).length
+  // Prova do período (Academy) e projeto integrador da fase: concluídos quando aprovados (o mapa já marca).
+  const finais = ativs.filter(a => a[0] === 'Prova e banca do período' || a[0] === 'Projeto integrador')
+  const totAval = dadas.length + finais.length
+  const nAval = dadas.filter(avaliada).length + finais.filter(a => a[1] === 1).length
+  const pct = n => (dadas.length ? Math.round(n / dadas.length * 100) : 0)
+  const txt = n => (dadas.length ? `${n} de ${dadas.length} ${dadas.length === 1 ? 'aula' : 'aulas'}` : 'nenhuma aula ainda')
+  return (
+    <section className="card">
+      <b>Seu progresso na fase · {etapa.nome}</b>
+      <Progresso nome="Academy" valor={pctAcademy + '%'} pct={pctAcademy} />
+      <Progresso nome="Aulas ao vivo" valor={txt(nPres)} pct={pct(nPres)} />
+      <Progresso nome="Avaliações" valor={totAval ? `${nAval} de ${totAval}` : 'nenhuma ainda'} pct={totAval ? Math.round(nAval / totAval * 100) : 0} />
+    </section>
+  )
+}
+
 // Card da próxima aula ao vivo da turma; abre o calendário ou entra na aula.
 function ProximaAula() {
   const { s, go } = useApp()
@@ -97,12 +137,7 @@ export default function Inicio() {
       <ProximaAula />
       <MapaCard />
 
-      <section className="card">
-        <b>Seu progresso na fase</b>
-        <Progresso nome="Academy" valor="100%" pct={100} />
-        <Progresso nome="Aulas ao vivo" valor="86%" pct={86} />
-        <Progresso nome="Avaliações" valor="80%" pct={80} />
-      </section>
+      <ProgressoFase />
       {pendentes.length > 0 && (
         <section className="card">
           <b>🏗️ Próximas entregas</b>

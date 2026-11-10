@@ -81,6 +81,7 @@ export function montarFranqueado(p, turma) {
 
   // Presença ao vivo
   const presencas = new Set()
+  const avaliadas = new Set() // aulas com a avaliação aprovada
   p.aulas.forEach(x => {
     if (String(x['Participação*']).toLowerCase() !== 'ao vivo') return
     const a = aulaPorNumero(x['Nº da aula*'])
@@ -94,6 +95,7 @@ export function montarFranqueado(p, turma) {
     const tipo = String(x['Tipo*'])
     if (tipo === 'Avaliação da aula') {
       const a = aulaPorNumero(x['Nº da aula'])
+      if (a) avaliadas.add(a.id)
       lanc('Avaliações', x, x['Data*'], 'Passar na avaliação da aula', pts('avaliacao'), 'Programado', { aula: a ? `Aula ao vivo #${a.numero} · ${a.tema}` : '' })
     } else if (/projeto/i.test(tipo)) {
       projeto = true
@@ -172,7 +174,7 @@ export function montarFranqueado(p, turma) {
     pontos: extrato.reduce((s, x) => s + x.valor, 0),
     etapas,
     entregas: ENTREGAS.map(e => ({ nome: e.nome, status: entregasFeitas[e.nome] ? 'validada' : 'pendente', situacao: entregasFeitas[e.nome]?.situacao || '', concluidaEm: entregasFeitas[e.nome]?.concluidaEm || '', lancamento: entregasFeitas[e.nome]?.lancamento || '' })),
-    conquistas, extras, extrato, academy, presencas: [...presencas],
+    conquistas, extras, extrato, academy, presencas: [...presencas], avaliadas: [...avaliadas],
     notificacoes, naoLidas, vistas: 0, ultimoAcesso: p.ultimoAcesso || '',
   }
 }
