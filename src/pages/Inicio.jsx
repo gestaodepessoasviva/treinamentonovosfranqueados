@@ -7,42 +7,37 @@ const SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
 const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 const diaSem = iso => SEM[new Date(iso + 'T12:00').getDay()]
 
-// Progresso real na fase atual (na Boas-vindas, mostra a Implantação, que é a primeira fase com aulas):
-//   - Academy: % da trilha da fase no Academy (importado da IMPORTAÇÃO ACADEMY);
-//   - Aulas ao vivo: presenças nas aulas da fase que já aconteceram;
-//   - Avaliações: avaliação de cada aula já dada + prova do período no Academy + projeto integrador (quando a fase tem).
-function ProgressoFase() {
+// Progresso real na jornada inteira, sempre em %:
+//   - Academy: média do % das 4 trilhas do franqueado (importado da IMPORTAÇÃO ACADEMY);
+//   - Aulas ao vivo: presenças sobre todas as aulas da turma (o TNF não conta);
+//   - Avaliações: avaliação de cada aula + provas dos períodos + projeto integrador, sobre o total da jornada.
+function ProgressoJornada() {
   const { s } = useApp()
-  const fase = Math.max(s.atual, 1)
-  const etapa = s.etapas[fase]
-  if (!etapa) return null
   const turma = s.turmas.find(t => t.codigo === s.turma)
-  const ativs = etapa.atividades
+  const todas = s.etapas.flatMap((e, ei) => e.atividades.map(a => ({ a, ei, meta: metaDe(ei, a[0]) })))
   // Academy
-  const trilhas = ativs.filter(a => a[0].startsWith('Academy: '))
-  const pctAcademy = s.academy && s.academy[fase] !== undefined
-    ? Math.round(s.academy[fase])
-    : (trilhas.length ? Math.round(trilhas.filter(a => a[1] === 1).length / trilhas.length * 100) : 0)
-  // Aulas da fase que já aconteceram (o TNF não conta)
-  const ids = ativs.flatMap(a => { const m = metaDe(fase, a[0]); return m.aulas && !m.tnf ? m.aulas : [] })
-  const hoje = hojeISO()
-  const dadas = ids.filter(id => { const a = turma?.aulas.find(x => x.id === id); return a && a.data <= hoje })
-  const feitaNoMapa = id => ativs.some(a => metaDe(fase, a[0]).aulas?.includes(id) && a[1] === 1)
+  const trilhas = todas.filter(x => x.a[0].startsWith('Academy: '))
+  const QUATRO = [1, 2, 3, 4] // as 4 trilhas do franqueado no Academy (Implantação, Inauguração, 1º Fundo, Ativação)
+  const pctAcademy = s.academy && Object.keys(s.academy).length
+    ? Math.round(QUATRO.reduce((soma, n) => soma + Math.min(100, s.academy[n] || 0), 0) / QUATRO.length)
+    : (trilhas.length ? Math.round(trilhas.filter(x => x.a[1] === 1).length / trilhas.length * 100) : 0)
+  // Aulas da turma (só aulas, sem TNF e folgas)
+  const aulas = (turma?.aulas || []).filter(a => (a.tipo || 'aula') === 'aula').map(a => a.id)
+  const feitaNoMapa = id => todas.some(x => x.meta.aulas?.includes(id) && x.a[1] === 1)
   const presente = id => (s.presencas ? s.presencas.includes(id) : feitaNoMapa(id))
   const avaliada = id => (s.avaliadas ? s.avaliadas.includes(id) : feitaNoMapa(id))
-  const nPres = dadas.filter(presente).length
-  // Prova do período (Academy) e projeto integrador da fase: concluídos quando aprovados (o mapa já marca).
-  const finais = ativs.filter(a => a[0] === 'Prova e banca do período' || a[0] === 'Projeto integrador')
-  const totAval = dadas.length + finais.length
-  const nAval = dadas.filter(avaliada).length + finais.filter(a => a[1] === 1).length
-  const pct = n => (dadas.length ? Math.round(n / dadas.length * 100) : 0)
-  const txt = n => (dadas.length ? `${n} de ${dadas.length} ${dadas.length === 1 ? 'aula' : 'aulas'}` : 'nenhuma aula ainda')
+  const pctAulas = aulas.length ? Math.round(aulas.filter(presente).length / aulas.length * 100) : 0
+  // Avaliações: aulas + provas dos períodos + projeto integrador
+  const finais = todas.filter(x => x.a[0] === 'Prova e banca do período' || x.a[0] === 'Projeto integrador')
+  const totAval = aulas.length + finais.length
+  const nAval = aulas.filter(avaliada).length + finais.filter(x => x.a[1] === 1).length
+  const pctAval = totAval ? Math.round(nAval / totAval * 100) : 0
   return (
     <section className="card">
-      <b>Seu progresso na fase · {etapa.nome}</b>
+      <b>Seu progresso na jornada</b>
       <Progresso nome="Academy" valor={pctAcademy + '%'} pct={pctAcademy} />
-      <Progresso nome="Aulas ao vivo" valor={txt(nPres)} pct={pct(nPres)} />
-      <Progresso nome="Avaliações" valor={totAval ? `${nAval} de ${totAval}` : 'nenhuma ainda'} pct={totAval ? Math.round(nAval / totAval * 100) : 0} />
+      <Progresso nome="Aulas ao vivo" valor={pctAulas + '%'} pct={pctAulas} />
+      <Progresso nome="Avaliações" valor={pctAval + '%'} pct={pctAval} />
     </section>
   )
 }
@@ -137,7 +132,7 @@ export default function Inicio() {
       <ProximaAula />
       <MapaCard />
 
-      <ProgressoFase />
+      <ProgressoJornada />
       {pendentes.length > 0 && (
         <section className="card">
           <b>🏗️ Próximas entregas</b>
