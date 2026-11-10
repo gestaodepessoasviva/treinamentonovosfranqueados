@@ -432,6 +432,21 @@ export function AppProvider({ children }) {
     },
     adminAjustarEstoque: (id, delta) => set(p => ({ beneficios: p.beneficios.map(x => (x.id === id ? { ...x, estoque: Math.max(0, x.estoque + delta) } : x)) })),
     adminAlternarBeneficio: id => set(p => ({ beneficios: p.beneficios.map(x => (x.id === id ? { ...x, ativo: !x.ativo } : x)) })),
+    adminCancelarTroca: t => {
+      const f = copiaDe(t.franqueado)
+      if (f) aplicarPontos(f, t.custo, 'Troca cancelada: ' + t.beneficio, { tipo: 'Ajuste' })
+      set(p => ({
+        trocas: p.trocas.filter(x => x.id !== t.id),
+        beneficios: p.beneficios.map(b => (b.nome === t.beneficio ? { ...b, estoque: b.estoque + 1 } : b)),
+        ...(f ? { franqueados: p.franqueados.map(x => (x.id === f.id ? f : x)) } : {}),
+      }))
+      toast('Troca cancelada: os pontos voltaram para o saldo')
+    },
+    adminExcluirBeneficio: id => {
+      const b = s.beneficios.find(x => x.id === id)
+      set(p => ({ beneficios: p.beneficios.filter(x => x.id !== id) }))
+      toast(`Benefício ${b?.nome || ''} excluído`)
+    },
   }
 
 
@@ -594,6 +609,11 @@ export function AppProvider({ children }) {
     adminAjustarEstoque: (id, delta) => {
       const b = s.beneficios.find(x => x.id === id)
       return comAviso(() => chamar('salvarBeneficio', { b: { ...b, codigo: id, estoque: Math.max(0, b.estoque + delta) } }))
+    },
+    adminCancelarTroca: t => comAviso(() => chamar('cancelarTroca', { id: t.id }), 'Troca cancelada: os pontos voltaram para o saldo'),
+    adminExcluirBeneficio: id => {
+      const b = s.beneficios.find(x => x.id === id)
+      return comAviso(() => chamar('excluirBeneficio', { codigo: id }), `Benefício ${b?.nome || ''} excluído`)
     },
     adminAlternarBeneficio: id => {
       const b = s.beneficios.find(x => x.id === id)

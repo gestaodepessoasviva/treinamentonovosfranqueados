@@ -76,7 +76,7 @@ export default function Pontos() {
         <b>📚 Ações do curso</b>
         {REGRAS.map(r => (
           <div className="row" key={r.id}>
-            <span>{r.acao}<br /><span className="mut sm">{r.obs}</span></span>
+            <span>{r.acao}</span>
             <span className="pl">+{r.pontos}</span>
           </div>
         ))}

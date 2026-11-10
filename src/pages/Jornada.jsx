@@ -1,5 +1,6 @@
 import { Mapa } from '../components/Mapa'
 import { Barra, Chip } from '../components/ui'
+import { useRef } from 'react'
 import { useApp } from '../state'
 
 const ICONE_CHIP = { d: '✅', c: '🔥', a: '○', l: '🔒' }
@@ -7,7 +8,10 @@ const STATUS = { d: 'Concluída', c: 'Em andamento', a: 'Disponível', l: 'Bloqu
 const ICONE_ATIV = ['○', '✅', '🔥']
 
 export default function Jornada() {
-  const { s, statusEtapa, abrirEtapa, go } = useApp()
+  const { s, statusEtapa, abrirEtapa } = useApp()
+  const cartao = useRef(null)
+  // Troca de etapa pelos botões: mostra o cartão da etapa nova, sem voltar ao topo da página.
+  const irPara = k => { abrirEtapa(k); requestAnimationFrame(() => cartao.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })) }
   const i = s.selecionada
   const etapa = s.etapas[i]
   const t = statusEtapa(i)
@@ -26,7 +30,7 @@ export default function Jornada() {
           </button>
         ))}
       </div>
-      <section className="card">
+      <section className="card etp-card" ref={cartao}>
         <b>{etapa.emoji} {etapa.nome}</b>{' '}
         <Chip c={t === 'd' ? 'cv' : t === 'l' ? 'cl' : 'cp'}>{STATUS[t]}</Chip>
         <Barra pct={pct} />
@@ -35,14 +39,13 @@ export default function Jornada() {
         {etapa.atividades.map(([nome, st]) => (
           <div className="row" key={nome}><span>{t === 'l' ? '🔒' : ICONE_ATIV[st]} {nome}</span></div>
         ))}
-        {i === 0 && <button className="go" onClick={() => go('guia')}>📖 Abrir Guia da Jornada</button>}
       </section>
       <nav className="etp-nav" aria-label="Navegar entre as etapas">
         {i > 0
-          ? <button onClick={() => { abrirEtapa(i - 1); window.scrollTo(0, 0) }}><small>← Etapa anterior</small>{s.etapas[i - 1].nome}</button>
+          ? <button onClick={() => irPara(i - 1)}><small>← Etapa anterior</small>{s.etapas[i - 1].nome}</button>
           : <span />}
         {i < s.etapas.length - 1 &&
-          <button className="n" onClick={() => { abrirEtapa(i + 1); window.scrollTo(0, 0) }}><small>Próxima etapa →</small>{s.etapas[i + 1].nome}</button>}
+          <button className="n" onClick={() => irPara(i + 1)}><small>Próxima etapa →</small>{s.etapas[i + 1].nome}</button>}
       </nav>
     </>
   )

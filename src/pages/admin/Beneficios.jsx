@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Confirmar from '../../components/Confirmar'
 import Icone, { chaveIcone, ICONES } from '../../components/Icone'
 import { fmt } from '../../data'
 import { useApp } from '../../state'
@@ -37,7 +38,9 @@ function FormBeneficio({ inicial, onPronto }) {
 }
 
 export default function Beneficios() {
-  const { s, adminAjustarEstoque, adminAlternarBeneficio } = useApp()
+  const { s, adminAjustarEstoque, adminAlternarBeneficio, adminExcluirBeneficio, adminCancelarTroca } = useApp()
+  const [excluir, setExcluir] = useState(null)
+  const [cancelar, setCancelar] = useState(null)
   const [editando, setEditando] = useState(null)
   const nomeDe = id => s.franqueados.find(f => f.id === id)?.nome ?? '—'
 
@@ -63,11 +66,18 @@ export default function Beneficios() {
           <span className="acoes">
             <button className="lk inline" onClick={() => setEditando(editando === b.id ? null : b.id)}>{editando === b.id ? 'Fechar edição' : 'Editar'}</button>
             <button className="lk inline" onClick={() => adminAlternarBeneficio(b.id)}>{b.ativo ? 'Tirar do catálogo' : 'Voltar ao catálogo'}</button>
+            <button className="lk inline perigo" onClick={() => setExcluir(b)}>Excluir</button>
           </span>
           {editando === b.id && <FormBeneficio inicial={b} onPronto={() => setEditando(null)} />}
         </section>
       ))}
       <FormBeneficio />
+      {excluir && (
+        <Confirmar titulo="Tem certeza que deseja excluir?" onNao={() => setExcluir(null)} onSim={() => { const id = excluir.id; setExcluir(null); adminExcluirBeneficio(id) }}>
+          <p>O benefício <b>{excluir.nome}</b> sai do catálogo e da lista do admin.</p>
+          <p>As trocas que já foram feitas continuam no histórico. Se a ideia é só pausar, use <b>Tirar do catálogo</b>.</p>
+        </Confirmar>
+      )}
 
       <h2>Trocas realizadas ({s.trocas.length})</h2>
       <section className="card">
@@ -75,10 +85,16 @@ export default function Beneficios() {
         {s.trocas.map(t => (
           <div className="row" key={t.id}>
             <span>{t.beneficio}<br /><span className="mut sm">{t.data} · {nomeDe(t.franqueado)}</span></span>
-            <span className="mn">−{fmt(t.custo)}</span>
+            <span className="acoes"><span className="mn">−{fmt(t.custo)}</span><button className="lk inline perigo" onClick={() => setCancelar(t)}>Cancelar troca</button></span>
           </div>
         ))}
       </section>
+      {cancelar && (
+        <Confirmar titulo="Tem certeza que deseja cancelar esta troca?" sim="Sim, cancelar troca" onNao={() => setCancelar(null)} onSim={() => { const t = cancelar; setCancelar(null); adminCancelarTroca(t) }}>
+          <p><b>{cancelar.beneficio}</b>, trocado por <b>{nomeDe(cancelar.franqueado)}</b> em {cancelar.data}.</p>
+          <p>Os <b>{fmt(cancelar.custo)} pontos</b> voltam para o saldo da pessoa e o benefício volta para o estoque.</p>
+        </Confirmar>
+      )}
     </>
   )
 }

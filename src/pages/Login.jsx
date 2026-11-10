@@ -33,14 +33,12 @@ export default function Login() {
     <Moldura>
       <form className="card" onSubmit={enviar}>
         <h1>Jornada de Novos Franqueados</h1>
-        <p className="mut sub">Capacitação de Novos Franqueados VIVA</p>
         <label>E-mail<input type="email" autoComplete="username" placeholder="voce@email.com" value={usuario} onChange={e => setUsuario(e.target.value)} /></label>
         <label>Senha<input type="password" autoComplete="current-password" value={senha} onChange={e => setSenha(e.target.value)} /></label>
         {!demo && <p className="mut sm" style={{ margin: '6px 0 0' }}>No primeiro acesso, use a senha inicial que a equipe enviou. Em seguida você cria a sua.</p>}
         {!demo && <label className="ck lembrar"><input type="checkbox" checked={lembrar} onChange={e => setLembrar(e.target.checked)} /> Lembrar de mim por 30 dias</label>}
         <button className="go w" type="submit" disabled={s.ocupado}>{s.ocupado ? 'Entrando…' : 'Entrar'}</button>
         <button className="lk" type="button" onClick={() => toast('Fale com a equipe de T&D: ela redefine sua senha e você cria uma nova no próximo acesso.')}>Esqueci minha senha</button>
-        {demo && <p className="mut sm">Modo demonstração: qualquer e-mail e senha entram como franqueado.</p>}
       </form>
     </Moldura>
   )

@@ -10,9 +10,10 @@ export const API_URL = import.meta.env.VITE_API_URL ?? PADRAO
 // Modo demonstração (dados de exemplo, qualquer e-mail e senha entram): por enquanto é o padrão,
 // para apresentar à equipe. A versão ligada à planilha abre com ?planilha no endereço.
 // Para voltar a usar a planilha como padrão, troque ABERTO para false.
-const ABERTO = true
+const ABERTO = false
 const params = new URLSearchParams(window.location.search)
-export const MODO_DEMO = !API_URL || params.has('demo') || (ABERTO && !params.has('planilha'))
+// No site publicado só entra quem tem cadastro: o ?demo funciona apenas no computador de desenvolvimento.
+export const MODO_DEMO = !API_URL || (import.meta.env.DEV && params.has('demo')) || (ABERTO && !params.has('planilha'))
 
 // ===== Sessão: "lembrar de mim" guarda no navegador; sem isso, só até fechar a aba =====
 const CHAVE = 'jornada-sessao'

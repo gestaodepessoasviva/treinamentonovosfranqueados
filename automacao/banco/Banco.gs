@@ -661,6 +661,24 @@ const ACOES_ADMIN = {
     else inserir('Prazos das entregas', linha)
     return ler('Prazos das entregas').map(limpo)
   },
+  // Cancela uma troca: apaga a linha em Trocas (os pontos voltam, porque o saldo é calculado dos fatos)
+  // e devolve 1 unidade ao estoque do benefício.
+  cancelarTroca: (u, { id }) => {
+    const t = ler('Trocas').find(x => String(x['ID']) === String(id))
+    if (!t) throw new Error('Troca não encontrada (pode já ter sido cancelada).')
+    const b = ler('Benefícios').find(x => String(x['Código*']) === String(t['Código do benefício']))
+    if (b) atualizar('Benefícios', b._linha, { 'Estoque*': Number(b['Estoque*'] || 0) + 1 })
+    apagarPorId('Trocas', t['ID'])
+    return { id }
+  },
+  // Exclui o benefício do catálogo. As trocas já feitas ficam na aba Trocas como histórico.
+  excluirBeneficio: (u, { codigo }) => {
+    const b = ler('Benefícios').find(x => String(x['Código*']) === String(codigo))
+    if (!b) throw new Error('Benefício não encontrado (pode já ter sido excluído).')
+    SpreadsheetApp.getActive().getSheetByName('Benefícios').deleteRow(b._linha)
+    delete CACHE['Benefícios']
+    return ler('Benefícios').map(limpo)
+  },
   salvarBeneficio: (u, { b }) => {
     const linha = { 'Código*': b.codigo || novoId(), 'Nome*': b.nome, 'Descrição': b.descricao || '', 'Custo em pontos*': Number(b.custo), 'Estoque*': Number(b.estoque), 'Ativo*': b.ativo === false ? 'Não' : 'Sim', 'Emoji': b.emoji || 'presente' }
     const atual = ler('Benefícios').find(x => x['Código*'] === linha['Código*'])
