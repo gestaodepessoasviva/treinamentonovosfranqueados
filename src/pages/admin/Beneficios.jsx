@@ -1,12 +1,13 @@
 import { useState } from 'react'
+import Icone, { chaveIcone, ICONES } from '../../components/Icone'
 import { fmt } from '../../data'
 import { useApp } from '../../state'
 
-const VAZIO = { emoji: '🎁', nome: '', descricao: '', custo: '', estoque: '' }
+const VAZIO = { emoji: 'presente', nome: '', descricao: '', custo: '', estoque: '' }
 
 function FormBeneficio({ inicial, onPronto }) {
   const { adminSalvarBeneficio, toast } = useApp()
-  const [b, setB] = useState(inicial ? { emoji: inicial.emoji, nome: inicial.nome, descricao: inicial.descricao || '', custo: inicial.custo, estoque: inicial.estoque } : VAZIO)
+  const [b, setB] = useState(inicial ? { emoji: chaveIcone(inicial.emoji), nome: inicial.nome, descricao: inicial.descricao || '', custo: inicial.custo, estoque: inicial.estoque } : VAZIO)
   const campo = k => e => setB({ ...b, [k]: e.target.value })
   const salvar = async e => {
     e.preventDefault()
@@ -20,11 +21,15 @@ function FormBeneficio({ inicial, onPronto }) {
       <b>{inicial ? '✏️ Editar benefício' : '➕ Novo benefício'}</b>
       <div className="form2">
         <label>Nome<input value={b.nome} onChange={campo('nome')} placeholder="ex.: Kit VIVA" /></label>
-        <label>Emoji<input value={b.emoji} onChange={campo('emoji')} maxLength={4} /></label>
         <label>Descrição<input value={b.descricao} onChange={campo('descricao')} placeholder="ex.: camiseta, caneca e caderno" /></label>
-        <span />
         <label>Custo em pontos<input type="number" min="1" step="1" value={b.custo} onChange={campo('custo')} /></label>
         <label>{inicial ? 'Estoque' : 'Estoque inicial'}<input type="number" min="0" step="1" value={b.estoque} onChange={campo('estoque')} /></label>
+      </div>
+      <div className="mut sm" style={{ marginTop: 10 }}>Ícone: <b>{ICONES[b.emoji].nome}</b></div>
+      <div className="ic-esc" role="radiogroup" aria-label="Ícone do benefício">
+        {Object.entries(ICONES).map(([k, ic]) => (
+          <button type="button" key={k} role="radio" aria-checked={b.emoji === k} title={ic.nome} className={b.emoji === k ? 'on' : ''} onClick={() => setB({ ...b, emoji: k })}><Icone nome={k} tamanho={24} /></button>
+        ))}
       </div>
       <button className="go" type="submit">{inicial ? 'Salvar' : 'Cadastrar benefício'}</button>
     </form>
@@ -46,7 +51,7 @@ export default function Beneficios() {
       {s.beneficios.map(b => (
         <section key={b.id} className={`card ${b.ativo ? '' : 'inativo'}`}>
           <div className="row quebra">
-            <span><span className="em" style={{ fontSize: 24 }}>{b.emoji}</span> <b>{b.nome}</b>{!b.ativo && <span className="mut sm"> · fora do catálogo</span>}<br />
+            <span><span className="em" style={{ color: 'var(--teal)', verticalAlign: 'middle' }}><Icone nome={b.emoji} tamanho={24} /></span> <b>{b.nome}</b>{!b.ativo && <span className="mut sm"> · fora do catálogo</span>}<br />
               <span className="mut sm">{fmt(b.custo)} pontos{b.descricao && ` · ${b.descricao}`}</span></span>
             <span className="acoes">
               <button className="mini" onClick={() => adminAjustarEstoque(b.id, -1)} aria-label="Tirar 1 do estoque">−</button>

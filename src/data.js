@@ -22,7 +22,7 @@ export const TURMAS = [
     // Calendário enviado pela coordenação. tipo: aula | tnf (presencial) | folga. Professor vazio = a confirmar.
     aulas: [
       { id: 't11-01', tipo: 'aula', data: '2026-11-12', numero: 1, tema: 'Modelo de Negócios', professor: 'Everdan', horario: '14h', link: 'https://meet.google.com/qph-kgti-cce' },
-      { id: 't11-02', tipo: 'aula', data: '2026-11-24', numero: 2, tema: 'Marketing', professor: 'Guilherme', horario: '14h' },
+      { id: 't11-02', tipo: 'aula', data: '2026-11-24', numero: 2, tema: 'Marketing', professor: 'Jhonny', horario: '14h' },
       { id: 't11-03', tipo: 'aula', data: '2026-11-26', numero: 3, tema: 'Marketing', professor: 'Guilherme', horario: '14h' },
       { id: 't11-04', tipo: 'aula', data: '2026-12-08', numero: 4, tema: 'Fornecedor', professor: '', horario: '14h' },
       { id: 't11-05', tipo: 'aula', data: '2026-12-10', numero: 5, tema: 'Precificação de OP', professor: 'Ronin', horario: '14h' },
@@ -134,14 +134,14 @@ export const BENEFICIOS = []
 
 // Selos da jornada (não dão pontos). tipo: Todo mundo · Jornada · Marco da franquia · Esforço extra.
 export const CONQUISTAS = [
-  { nome: 'Largada', emoji: '🚩', quando: 'Primeiro login na plataforma', tipo: 'Todo mundo' },
-  { nome: 'Visão de Mercado', emoji: '🔭', quando: 'Aulas de Modelo de Negócio e Vendas + mapeamento de mercado e de concorrentes', tipo: 'Jornada' },
-  { nome: 'Presente no TNF', emoji: '🤝', quando: 'Participar do Treinamento de Novos Franqueados', tipo: 'Jornada' },
-  { nome: 'Portas Abertas', emoji: '🚪', quando: 'Inaugurar a unidade na data planejada', tipo: 'Marco da franquia' },
-  { nome: 'Primeiro Fundo', emoji: '💰', quando: 'Fechar o primeiro fundo', tipo: 'Marco da franquia' },
-  { nome: 'Mestre do Academy', emoji: '📚', quando: 'Concluir as trilhas da Implantação, da Inauguração e do 1º Fundo', tipo: 'Esforço extra' },
-  { nome: 'Voz da Turma', emoji: '🎤', quando: 'Compartilhar 3 casos reais nas aulas', tipo: 'Esforço extra' },
-  { nome: 'Formado na Universidade VIVA', emoji: '🎓', quando: 'Concluir a jornada (aulas, provas e projeto integrador)', tipo: 'Todo mundo' },
+  { nome: 'Largada', emoji: '🚩', icone: 'bandeira', quando: 'Primeiro login na plataforma', tipo: 'Todo mundo' },
+  { nome: 'Visão de Mercado', emoji: '🔭', icone: 'grafico', quando: 'Aulas de Modelo de Negócio e Vendas + entregas Mapeamento de mercado e Análise de concorrência', tipo: 'Jornada' },
+  { nome: 'Presente no TNF', emoji: '🤝', icone: 'pessoas', quando: 'Participar do Treinamento de Novos Franqueados', tipo: 'Jornada' },
+  { nome: 'Portas Abertas', emoji: '🚪', icone: 'porta', quando: 'Inaugurar a unidade na data planejada', tipo: 'Marco da franquia' },
+  { nome: 'Primeiro Fundo', emoji: '💰', icone: 'carteira', quando: 'Fechar o primeiro fundo', tipo: 'Marco da franquia' },
+  { nome: 'Mestre do Academy', emoji: '📚', icone: 'livro', quando: 'Concluir as trilhas da Implantação, da Inauguração e do 1º Fundo', tipo: 'Esforço extra' },
+  { nome: 'Voz da Turma', emoji: '🎤', icone: 'microfone', quando: 'Compartilhar 3 casos reais nas aulas', tipo: 'Esforço extra' },
+  { nome: 'Formado na Universidade VIVA', emoji: '🎓', icone: 'formatura', quando: 'Concluir a jornada (aulas, provas e projeto integrador)', tipo: 'Todo mundo' },
 ]
 
 
@@ -153,13 +153,13 @@ export const NOTIFICACOES = [
 ]
 
 export const MENU = [
-  { id: 'inicio', emoji: '🏠', nome: 'Início' },
-  { id: 'jornada', emoji: '🗺️', nome: 'Minha Jornada' },
-  { id: 'pontos', emoji: '⭐', nome: 'Pontos' },
-  { id: 'benef', emoji: '🎁', nome: 'Benefícios' },
-  { id: 'conq', emoji: '🏅', nome: 'Conquistas' },
-  { id: 'calendario', emoji: '📅', nome: 'Calendário da turma' },
-  { id: 'guia', emoji: '📖', nome: 'Guia da Jornada' },
+  { id: 'inicio', icone: 'casa', nome: 'Início' },
+  { id: 'jornada', icone: 'mapa', nome: 'Minha Jornada' },
+  { id: 'pontos', icone: 'estrela', nome: 'Pontos' },
+  { id: 'benef', icone: 'presente', nome: 'Benefícios' },
+  { id: 'conq', icone: 'medalha', nome: 'Conquistas' },
+  { id: 'calendario', icone: 'calendario', nome: 'Calendário da turma' },
+  { id: 'guia', icone: 'livro', nome: 'Guia da Jornada' },
 ]
 
 // Extrato e notificações de exemplo da primeira franqueada.
@@ -173,7 +173,7 @@ export const EXTRATO = [
 ]
 
 // Guia da Jornada em PDF no Google Drive. Enquanto estiver vazio, a página do Guia avisa que o link vem em breve.
-export const GUIA_LINK = ''
+export const GUIA_LINK = 'https://drive.google.com/file/d/1CFlhBGncPQA-aCb_ZX0r9IYSygSJshKz/view?usp=sharing'
 
 // Links das trilhas no Academy.
 export const ACADEMY = 'https://academy.vivaeventos.com.br'
@@ -187,7 +187,6 @@ const trilha = id => `${ACADEMY}/course/section.php?id=${id}`
 export const ETAPAS = [
   { nome: 'Boas-vindas', emoji: '🚩', x: 13.7, y: 85, ate: 'até a 1ª aula (12/11)', atividades: [
     ['Primeiro acesso à plataforma', 0, {}],
-    ['Entrar no grupo de WhatsApp da turma', 0, {}],
     ['Ler o Guia da Jornada', 0, { tela: 'guia' }],
     ['Consultar o calendário da turma', 0, { tela: 'calendario' }],
     ['Acessar o Academy', 0, { link: ACADEMY }],
@@ -225,7 +224,7 @@ export const ETAPAS = [
     ['Inaugurar a unidade', 0, {}],
     ['Prova e banca do período', 0, { pontos: 100 }],
   ] },
-  { nome: 'Primeiro Fundo', emoji: '💰', x: 55.6, y: 60.8, ate: 'Relacionamento', atividades: [
+  { nome: 'Primeiro Fundo', emoji: '💰', icone: 'carteira', x: 55.6, y: 60.8, ate: 'Relacionamento', atividades: [
     ['Academy: Performance Rede VIVA', 0, { link: trilha(382), pontos: 40 }],
     ['Aulas ao vivo #15 a #17 · Relacionamento', 0, { aulas: ['t11-17', 't11-18', 't11-19'] }],
     ['Fechar o primeiro fundo', 0, {}],

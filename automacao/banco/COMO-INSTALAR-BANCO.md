@@ -45,9 +45,12 @@ Todo dia o script copia os percentuais para **Progresso Academy**. Quando uma tr
 
 ## 4. Listas de presença
 1. Clique em **🗄️ Banco → 2. Informar a pasta das listas de presença** e cole o link da pasta.
-2. Cada lista precisa estar como **Planilha Google**, com a **data da aula no nome do arquivo**, por exemplo `Lista de presença 2026-11-12` ou `Aula 12/11`. Também vale o nome com o código do Meet.
-3. Quem aparece na lista conta como presente ao vivo. O script reconhece a pessoa pelo e-mail ou, se não houver e-mail, pelo nome.
-4. Cada arquivo é lido uma vez só. Ele fica registrado em **Arquivos de presença**, junto com qualquer arquivo em que a aula não foi encontrada.
+2. Coloque na pasta o relatório de presença do Meet do jeito que ele chega, com as colunas Nome do participante, E-mail, Duração, Horário de entrada e Horário de saída. Não precisa renomear.
+   - Formatos aceitos: **Planilha Google** ou **.csv**. Se vier em Excel (.xlsx), abra no Drive e use **Arquivo → Salvar como Planilhas Google**.
+3. **Como o robô acha a aula**, nesta ordem: pelo código do Meet no nome do arquivo, pela data no nome do arquivo ou pela data do **Horário de entrada**. A data precisa ser a de uma aula da aba **Calendário**.
+4. **Como o robô acha a pessoa:** pelo e-mail, que precisa ser o mesmo da aba Franqueados. Se não houver e-mail, ele procura pelo nome completo. Quem entrou por telefone ou por sala do Meet não é reconhecido e precisa ser lançado à mão, em **⭐ Lançar pontos**.
+5. Quem aparece na lista conta como presente ao vivo, sem tempo mínimo.
+6. Cada arquivo é lido uma vez só. O resultado fica em **Arquivos de presença**, com uma observação quando algo não deu certo. Para ler um arquivo de novo, apague a linha dele nessa aba.
 
 ## 5. Atualização diária às 8h
 - **🗄️ Banco → Atualizar agora** roda tudo na hora, para testar.

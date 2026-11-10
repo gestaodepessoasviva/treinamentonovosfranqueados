@@ -37,6 +37,13 @@ export default function Jornada() {
         ))}
         {i === 0 && <button className="go" onClick={() => go('guia')}>📖 Abrir Guia da Jornada</button>}
       </section>
+      <nav className="etp-nav" aria-label="Navegar entre as etapas">
+        {i > 0
+          ? <button onClick={() => { abrirEtapa(i - 1); window.scrollTo(0, 0) }}><small>← Etapa anterior</small>{s.etapas[i - 1].nome}</button>
+          : <span />}
+        {i < s.etapas.length - 1 &&
+          <button className="n" onClick={() => { abrirEtapa(i + 1); window.scrollTo(0, 0) }}><small>Próxima etapa →</small>{s.etapas[i + 1].nome}</button>}
+      </nav>
     </>
   )
 }

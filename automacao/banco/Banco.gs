@@ -35,7 +35,7 @@ const ABAS = {
   'Progresso Academy': ['E-mail', 'Trilha', '% concluído', 'Atualizado em'],
   'Config Academy': ['Trilha*', 'Coluna na IMPORTAÇÃO ACADEMY*', 'Etapa', 'Prazo'],
   'Arquivos de presença': ['ID do arquivo', 'Nome do arquivo', 'Lido em', 'Aula', 'Pessoas encontradas', 'Observação'],
-  'Acessos': ['E-mail', 'Perfil', 'Sal', 'Senha (hash)', 'Último acesso'],
+  'Acessos': ['E-mail', 'Perfil', 'Sal', 'Senha (hash)', 'Último acesso', 'Foto'],
   'Registro do robô': ['Quando', 'Etapa', 'Resultado'],
 }
 // Colunas que saem da planilha: a Cidade é a franquia; a avaliação da aula não é mais registrada na presença.
@@ -47,7 +47,7 @@ const SO_LEITURA = ['Progresso Academy', 'Arquivos de presença', 'Registro do r
 // Primeira carga do calendário da turma de novembro (só entra se a aba estiver vazia).
 const CALENDARIO_INICIAL = [
   ['t11-01', 'aula', '2026-11-12', '', 1, 'Modelo de Negócios', 'Everdan', 'https://meet.google.com/qph-kgti-cce'],
-  ['t11-02', 'aula', '2026-11-24', '', 2, 'Marketing', 'Guilherme', ''],
+  ['t11-02', 'aula', '2026-11-24', '', 2, 'Marketing', 'Jhonny', ''],
   ['t11-03', 'aula', '2026-11-26', '', 3, 'Marketing', 'Guilherme', ''],
   ['t11-04', 'aula', '2026-12-08', '', 4, 'Fornecedor', '', ''],
   ['t11-05', 'aula', '2026-12-10', '', 5, 'Precificação de OP', 'Ronin', ''],
@@ -220,11 +220,16 @@ function importarAcademy() {
   const progresso = []
   const concluidas = []
   const semMatch = []
+  // "Acessar o Academy" (Boas-vindas): marcado quando a pessoa tem progresso em qualquer curso da importação.
+  const colunasPct = cab.map((h, j) => (/^%/.test(String(h)) ? j : -1)).filter(j => j >= 0)
+  const jaAcessou = new Set(ler('Atividades').filter(a => a['Atividade*'] === 'Acessar o Academy').map(a => String(a['E-mail*']).toLowerCase()))
+  const acessos = []
 
   franqueados.forEach(f => {
     const email = String(f['E-mail*']).trim().toLowerCase()
     const l = porNome[normalizar(f['Nome no Academy'] || f['Nome completo*'])]
     if (!l) return semMatch.push(f['Nome completo*'])
+    if (!jaAcessou.has(email) && colunasPct.some(j => Number(l[j]) > 0)) acessos.push(email)
     config.forEach(c => {
       const v = l[cab.indexOf(c['Coluna na IMPORTAÇÃO ACADEMY*'])]
       const pct = v === '' || v === null ? 0 : Number(v)
@@ -239,12 +244,16 @@ function importarAcademy() {
   if (pg.getLastRow() > 1) pg.getRange(2, 1, pg.getLastRow() - 1, 4).clearContent()
   if (progresso.length) pg.getRange(2, 1, progresso.length, 4).setValues(progresso)
   concluidas.forEach(c => inserir('Disciplinas Academy', c))
-  return `${franqueados.length - semMatch.length} franqueados achados · ${concluidas.length} trilhas concluídas hoje` +
+  acessos.forEach(email => inserir('Atividades', { 'E-mail*': email, 'Atividade*': 'Acessar o Academy', 'Data*': hoje, 'Marcado por': 'Robô (Academy)' }))
+  return `${franqueados.length - semMatch.length} franqueados achados · ${concluidas.length} trilhas concluídas hoje` + (acessos.length ? ` · ${acessos.length} com acesso ao Academy marcado` : '') +
     (semMatch.length ? ` · sem correspondência no Academy: ${semMatch.join(', ')} (preencha "Nome no Academy")` : '')
 }
 
-// Lê as listas de presença (planilhas do Meet) da pasta configurada que ainda não foram lidas.
-// A aula é achada pela data no nome do arquivo (ex.: 2026-11-12, 12/11, 12-11) ou pelo código do Meet.
+// Lê as listas de presença do Meet da pasta configurada que ainda não foram lidas.
+// Aceita Planilha Google e .csv. Formato do relatório do Meet: Nome do participante, E-mail do participante,
+// Duração, Horário de entrada, Horário de saída (o robô procura as colunas pelo conteúdo, em qualquer ordem).
+// A aula é achada, nesta ordem: pelo código do Meet no nome do arquivo, pela data no nome do arquivo
+// ou pela data do "Horário de entrada" dentro da lista.
 // Quem estiver na lista conta como presente "Ao vivo" (sem tempo mínimo).
 function importarPresencas() {
   const id = PropertiesService.getScriptProperties().getProperty('PASTA_PRESENCA')
@@ -260,17 +269,27 @@ function importarPresencas() {
     if (f['Nome no Academy']) porNome[normalizar(f['Nome no Academy'])] = email
   })
   const jaTem = new Set(ler('Aulas ao vivo').map(a => chave(a['E-mail*'], a['Nº da aula*'])))
-  let arquivos = 0, presencas = 0
-  const arqs = DriveApp.getFolderById(id).getFilesByType(MimeType.GOOGLE_SHEETS)
+  let arquivos = 0, presencas = 0, ignorados = 0
+  const arqs = DriveApp.getFolderById(id).getFiles()
   while (arqs.hasNext()) {
     const arq = arqs.next()
     if (lidos.has(arq.getId())) continue
-    const aula = aulaDoArquivo(arq.getName(), aulas)
-    if (!aula) {
-      inserir('Arquivos de presença', { 'ID do arquivo': '', 'Nome do arquivo': arq.getName(), 'Lido em': new Date(), 'Aula': '', 'Pessoas encontradas': 0, 'Observação': 'Não achei a aula pela data do nome do arquivo. Renomeie com a data (ex.: 2026-11-12).' })
+    const tipo = arq.getMimeType()
+    if (tipo !== MimeType.GOOGLE_SHEETS && tipo !== MimeType.CSV && !/\.csv$/i.test(arq.getName())) {
+      if (/spreadsheetml|ms-excel/.test(tipo)) {
+        inserir('Arquivos de presença', { 'ID do arquivo': arq.getId(), 'Nome do arquivo': arq.getName(), 'Lido em': new Date(), 'Aula': '', 'Pessoas encontradas': 0,
+          'Observação': 'Arquivo do Excel: abra no Drive e use Arquivo → Salvar como Planilhas Google. Depois apague esta linha.' })
+      } else ignorados++
       continue
     }
-    const pessoas = pessoasDaLista(SpreadsheetApp.openById(arq.getId()), porEmail, porNome)
+    const linhas = linhasDoArquivo(arq)
+    const aula = aulaDoArquivo(arq.getName(), aulas) || aulaPelasDatas(linhas, aulas)
+    if (!aula) {
+      inserir('Arquivos de presença', { 'ID do arquivo': '', 'Nome do arquivo': arq.getName(), 'Lido em': new Date(), 'Aula': '', 'Pessoas encontradas': 0,
+        'Observação': 'Não achei a aula: a data dos horários de entrada não bate com nenhuma aula da aba Calendário.' })
+      continue
+    }
+    const pessoas = pessoasDaLista(linhas, porEmail, porNome)
     pessoas.forEach(email => {
       if (jaTem.has(chave(email, aula['Nº da aula']))) return
       inserir('Aulas ao vivo', { 'E-mail*': email, 'Nº da aula*': aula['Nº da aula'], 'Data da aula*': iso(aula['Data*']), 'Participação*': 'Ao vivo',
@@ -279,10 +298,19 @@ function importarPresencas() {
       presencas++
     })
     inserir('Arquivos de presença', { 'ID do arquivo': arq.getId(), 'Nome do arquivo': arq.getName(), 'Lido em': new Date(),
-      'Aula': `#${aula['Nº da aula']} · ${iso(aula['Data*'])}`, 'Pessoas encontradas': pessoas.length, 'Observação': '' })
+      'Aula': `#${aula['Nº da aula']} · ${iso(aula['Data*'])}`, 'Pessoas encontradas': pessoas.length,
+      'Observação': pessoas.length ? '' : 'Ninguém da lista bate com a aba Franqueados (e-mail ou nome completo).' })
     arquivos++
   }
-  return `${arquivos} listas novas lidas · ${presencas} presenças lançadas`
+  return `${arquivos} listas novas lidas · ${presencas} presenças lançadas` + (ignorados ? ` · ${ignorados} arquivos de outro tipo ignorados` : '')
+}
+
+// Todas as linhas do arquivo (todas as abas, se for Planilha Google). Datas da planilha vêm como Date.
+function linhasDoArquivo(arq) {
+  if (arq.getMimeType() === MimeType.GOOGLE_SHEETS) {
+    return SpreadsheetApp.openById(arq.getId()).getSheets().reduce((tudo, sh) => tudo.concat(sh.getDataRange().getValues()), [])
+  }
+  return Utilities.parseCsv(arq.getBlob().getDataAsString())
 }
 
 function aulaDoArquivo(nome, aulas) {
@@ -292,29 +320,58 @@ function aulaDoArquivo(nome, aulas) {
     const a = aulas.find(x => String(x['Link do Meet'] || '').toLowerCase().includes(codigo.toLowerCase()))
     if (a) return a
   }
-  let m = n.match(/(\d{4})-(\d{2})-(\d{2})/)
-  let data = m && `${m[1]}-${m[2]}-${m[3]}`
-  if (!data) {
-    m = n.match(/(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2,4}))?/)
-    if (m) {
-      const dd = m[1].padStart(2, '0'), mm = m[2].padStart(2, '0')
-      return aulas.find(a => iso(a['Data*']).slice(5) === `${mm}-${dd}` && (!m[3] || iso(a['Data*']).slice(2, 4) === m[3].slice(-2)))
-    }
-  }
-  return data ? aulas.find(a => iso(a['Data*']) === data) : null
+  return aulaDaData(n, aulas)
 }
 
-// Procura, em qualquer aba da lista, uma coluna de e-mail; se não houver, uma de nome.
-function pessoasDaLista(planilha, porEmail, porNome) {
+// Acha a aula pela primeira data escrita no texto (2026-11-12, 12/11/2026, 12/11, 12-11, 12.11).
+function aulaDaData(texto, aulas) {
+  const n = String(texto)
+  let m = n.match(/(\d{4})-(\d{2})-(\d{2})/)
+  if (m) return aulas.find(a => iso(a['Data*']) === `${m[1]}-${m[2]}-${m[3]}`)
+  m = n.match(/(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2,4}))?/)
+  if (!m) return null
+  const dd = m[1].padStart(2, '0'), mm = m[2].padStart(2, '0')
+  return aulas.find(a => iso(a['Data*']).slice(5) === `${mm}-${dd}` && (!m[3] || iso(a['Data*']).slice(2, 4) === m[3].slice(-2)))
+}
+
+// Sem data no nome: usa a data que mais aparece nas células com data e hora (o "Horário de entrada").
+function aulaPelasDatas(linhas, aulas) {
+  const conta = {}
+  linhas.forEach(l => l.forEach(c => {
+    let d = ''
+    if (c instanceof Date) { if (c.getFullYear() >= 2020) d = iso(c) }
+    else {
+      const t = String(c)
+      let m = t.match(/(20\d\d)-(\d{2})-(\d{2})/)
+      if (m) d = `${m[1]}-${m[2]}-${m[3]}`
+      else if ((m = t.match(/(\d{1,2})\/(\d{1,2})\/(20\d\d)/))) d = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`
+    }
+    if (d) conta[d] = (conta[d] || 0) + 1
+  }))
+  const datas = Object.keys(conta).sort((a, b) => conta[b] - conta[a])
+  for (const d of datas) {
+    const a = aulas.find(x => iso(x['Data*']) === d)
+    if (a) return a
+  }
+  return null
+}
+
+// Reconhece a pessoa pelo e-mail; se não houver, pelo nome (inteiro numa célula ou nome + sobrenome em células vizinhas).
+// Telefones e salas do Meet não batem com ninguém e são ignorados.
+function pessoasDaLista(linhas, porEmail, porNome) {
   const achados = new Set()
-  planilha.getSheets().forEach(sh => {
-    const v = sh.getDataRange().getDisplayValues()
-    v.forEach(l => l.forEach(c => {
-      const t = String(c).trim()
+  linhas.forEach(l => {
+    const cel = l.map(c => (c instanceof Date ? '' : String(c).trim()))
+    let achou = false
+    cel.forEach(t => {
       const email = (t.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [])[0]
-      if (email && porEmail[email.toLowerCase()]) achados.add(porEmail[email.toLowerCase()])
-      else if (t && porNome[normalizar(t)]) achados.add(porNome[normalizar(t)])
-    }))
+      if (email && porEmail[email.toLowerCase()]) { achados.add(porEmail[email.toLowerCase()]); achou = true }
+    })
+    if (achou) return
+    cel.forEach((t, i) => {
+      if (t && porNome[normalizar(t)]) achados.add(porNome[normalizar(t)])
+      else if (t && cel[i + 1] && porNome[normalizar(t + ' ' + cel[i + 1])]) achados.add(porNome[normalizar(t + ' ' + cel[i + 1])])
+    })
   })
   return [...achados]
 }
@@ -482,6 +539,15 @@ const ACOES_PUBLICAS = {
 
 
 const ACOES_FRANQUEADO = {
+  // Foto de perfil: JPEG pequeno (já reduzido na plataforma), guardado na aba escondida Acessos. '' remove.
+  salvarFoto: (u, { foto }) => {
+    foto = String(foto || '')
+    if (foto && (!/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(foto) || foto.length > 48000)) throw new Error('Foto inválida ou grande demais. Tente outra imagem.')
+    const ac = acessoDe(u.email)
+    if (ac) atualizar('Acessos', ac._linha, { 'Foto': foto })
+    else inserir('Acessos', { 'E-mail': u.email, 'Perfil': 'Franqueado', 'Último acesso': '', 'Foto': foto })
+    return { ok: true }
+  },
   // Primeiro acesso: cria a senha. Depois: troca, informando a senha atual.
   trocarSenha: (u, { nova, atual }) => {
     nova = String(nova || '')
@@ -546,6 +612,17 @@ const ACOES_ADMIN = {
     if (!feita && atual) apagarPorId('Atividades', atual['ID'])
     return pacoteDoFranqueado(email, true)
   },
+  // Exclui o cadastro e o acesso. Os lançamentos (pontos, presenças etc.) ficam na planilha como histórico.
+  excluirFranqueado: (u, { email }) => {
+    email = String(email || '').trim().toLowerCase()
+    const f = ler('Franqueados').find(x => String(x['E-mail*']).trim().toLowerCase() === email && x['Perfil*'] !== 'Admin')
+    if (!f) throw new Error('Cadastro não encontrado (pode já ter sido excluído).')
+    SpreadsheetApp.getActive().getSheetByName('Franqueados').deleteRow(f._linha)
+    delete CACHE['Franqueados']
+    const ac = acessoDe(email)
+    if (ac && ac['Perfil'] !== 'Admin') { SpreadsheetApp.getActive().getSheetByName('Acessos').deleteRow(ac._linha); delete CACHE['Acessos'] }
+    return { email }
+  },
   salvarFranqueado: (u, { dados, emailAntigo }) => {
     const email = String(dados.email || '').trim().toLowerCase()
     if (!dados.nome || !email.includes('@')) throw new Error('Informe nome e um e-mail válido.')
@@ -585,7 +662,7 @@ const ACOES_ADMIN = {
     return ler('Prazos das entregas').map(limpo)
   },
   salvarBeneficio: (u, { b }) => {
-    const linha = { 'Código*': b.codigo || novoId(), 'Nome*': b.nome, 'Descrição': b.descricao || '', 'Custo em pontos*': Number(b.custo), 'Estoque*': Number(b.estoque), 'Ativo*': b.ativo === false ? 'Não' : 'Sim', 'Emoji': b.emoji || '🎁' }
+    const linha = { 'Código*': b.codigo || novoId(), 'Nome*': b.nome, 'Descrição': b.descricao || '', 'Custo em pontos*': Number(b.custo), 'Estoque*': Number(b.estoque), 'Ativo*': b.ativo === false ? 'Não' : 'Sim', 'Emoji': b.emoji || 'presente' }
     const atual = ler('Benefícios').find(x => x['Código*'] === linha['Código*'])
     if (atual) atualizar('Benefícios', atual._linha, linha)
     else inserir('Benefícios', linha)
@@ -631,6 +708,7 @@ function pacoteDoFranqueado(email, comoAdmin) {
     conquistas: meu('Conquistas'), atividades: meu('Atividades'), trocas: meu('Trocas'), progressoAcademy: meu('Progresso Academy'),
   }
   if (!comoAdmin) pacote.beneficios = ler('Benefícios').filter(b => b['Ativo*'] !== 'Não').map(limpo)
+  pacote.foto = (acessoDe(email) || {})['Foto'] || ''
   if (comoAdmin) pacote.ultimoAcesso = iso((acessoDe(email) || {})['Último acesso'] || '')
   return pacote
 }
@@ -655,7 +733,12 @@ function inserir(nome, obj) {
   const sh = SpreadsheetApp.getActive().getSheetByName(nome)
   const cab = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]
   if (cab.includes('ID') && !obj['ID']) obj['ID'] = novoId()
-  sh.appendRow(cab.map(h => (h in obj ? obj[h] : '')))
+  // Grava logo abaixo da última linha com a 1ª coluna preenchida (e-mail, código ou ID).
+  // O appendRow pularia linhas que só têm formatação, lista suspensa, espaços ou fórmulas.
+  const col1 = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues() : []
+  let ultima = col1.length
+  while (ultima > 0 && String(col1[ultima - 1][0]).trim() === '') ultima--
+  sh.getRange(ultima + 2, 1, 1, cab.length).setValues([cab.map(h => (h in obj ? obj[h] : ''))])
   return obj['ID']
 }
 
@@ -700,7 +783,8 @@ function registrar(etapa, resultado) {
   const sh = ss.getSheetByName('Registro do robô')
   if (!sh) return
   sh.insertRowAfter(1)
-  sh.getRange(2, 1, 1, 3).setValues([[new Date(), etapa, String(resultado).slice(0, 4000)]])
+  // A linha nova herda o laranja do cabeçalho: volta para o formato normal.
+  sh.getRange(2, 1, 1, 3).setBackground(null).setFontColor(null).setFontWeight('normal').setValues([[new Date(), etapa, String(resultado).slice(0, 4000)]])
   // Mostra dia e hora na coluna Quando (vale também para as linhas antigas).
   sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 1), 1).setNumberFormat('dd/MM/yyyy HH:mm')
 }

@@ -61,8 +61,8 @@ export default function App() {
   return (
     <>
       <Header />
-      <main>
-        {s.tela !== 'inicio' && <button className="back" onClick={() => go('inicio')}>← Início</button>}
+      <main className="com-lado">
+        {s.tela !== 'inicio' && <button className="back so-cel" onClick={() => go('inicio')}>← Início</button>}
         <Tela />
       </main>
       {ocupado}

@@ -66,7 +66,7 @@ export function montarTurma(t, calendario, prazos) {
 
 export const montarBeneficio = b => ({
   id: String(b['Código*']), nome: b['Nome*'], descricao: b['Descrição'] || '', custo: Number(b['Custo em pontos*']) || 0,
-  estoque: Number(b['Estoque*']) || 0, ativo: !/^n[aã]o$/i.test(String(b['Ativo*'] || '')), emoji: b['Emoji'] || '🎁',
+  estoque: Number(b['Estoque*']) || 0, ativo: !/^n[aã]o$/i.test(String(b['Ativo*'] || '')), emoji: b['Emoji'] || 'presente',
 })
 
 // Um franqueado a partir do "pacote" que o serviço devolve.
@@ -165,7 +165,7 @@ export function montarFranqueado(p, turma) {
   const naoLidas = notificacoes.filter(n => !vistos.includes(n.id)).length
 
   return {
-    id: email, email, nome: perfil['Nome completo*'], franquia: perfil['Cidade'] || '', uf: perfil['UF'] || '', whatsapp: perfil['WhatsApp'] || '',
+    id: email, email, foto: p.foto || '', nome: perfil['Nome completo*'], franquia: perfil['Cidade'] || '', uf: perfil['UF'] || '', whatsapp: perfil['WhatsApp'] || '',
     turma: perfil['Código da turma*'] || '', ativo: !/^n[aã]o$/i.test(String(perfil['Ativo*'] || '')), loginMoodle: perfil['Login do Moodle'] || '',
     nomeAcademy: perfil['Nome no Academy'] || '',
     pontos: extrato.reduce((s, x) => s + x.valor, 0),

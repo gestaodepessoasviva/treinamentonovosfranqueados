@@ -47,7 +47,7 @@ const CONTATOS = [
 
 const EQUIPE = [
   ['Coordenação', [['Fernanda', 'Processo da formação'], ['Laura', 'Processo da formação']]],
-  ['Professores', [['Everdan', 'Modelo de Negócio'], ['Guilherme', 'Marketing'], ['Ronin', 'Vendas'], ['Thomas', 'Pós-vendas'], ['Babi', 'Pós-vendas · Relacionamento'], ['Bruna', 'Pós-vendas'], ['Maria', 'Pós-vendas · Vendas · Atendimento'], ['Alessandra', 'Pós-vendas · Produção']]],
+  ['Professores', [['Everdan', 'Modelo de Negócio'], ['Jhonny', 'Marketing'], ['Guilherme', 'Marketing'], ['Ronin', 'Vendas · Precificação de OP'], ['Thomas', 'Pós-vendas'], ['Babi', 'Pós-vendas · Relacionamento'], ['Bruna', 'Pós-vendas'], ['Régis', 'Gestão de Pessoas'], ['Maria', 'Pós-vendas · Vendas · Atendimento'], ['Alessandra', 'Pós-vendas · Produção']]],
 ]
 
 const FAQ = [
@@ -76,11 +76,9 @@ export default function Guia() {
           <p className="mut sm">O mesmo conteúdo desta página, no arquivo para baixar ou imprimir.</p>
           <div className="guia-acoes">
             {GUIA_LINK
-              ? <a className="go3" href={GUIA_LINK} target="_blank" rel="noreferrer">Abrir o Guia (PDF) ↗</a>
+              ? <a className="go3" href={GUIA_LINK} target="_blank" rel="noreferrer" onClick={() => s.etapas && !lido && concluirMinha(LER)}>Abrir o Guia (PDF) ↗</a>
               : <span className="mut sm"><b>O link do PDF vai aparecer aqui em breve.</b></span>}
-            {s.etapas && (lido
-              ? <span className="guia-ok">✅ Leitura confirmada</span>
-              : <button className="mini ok" onClick={() => concluirMinha(LER)}>Li o Guia ✓</button>)}
+            {s.etapas && lido && <span className="guia-ok">✅ Leitura confirmada</span>}
           </div>
         </div>
       </section>

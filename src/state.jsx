@@ -259,7 +259,18 @@ export function AppProvider({ children }) {
     },
     sair: () => set({ sessao: null, menu: false, tela: 'inicio' }),
     criarMinhaSenha: async () => {},
+    salvarFoto: foto => {
+      const f = copiaDe(eu.id)
+      f.foto = foto
+      set(p => ({ franqueados: p.franqueados.map(x => (x.id === f.id ? f : x)) }))
+      toast(foto ? 'Foto atualizada' : 'Foto removida')
+    },
     adminRedefinirSenha: () => toast('Na versão final: a senha volta para a senha inicial'),
+    adminExcluirFranqueado: id => {
+      const f = s.franqueados.find(x => x.id === id)
+      set(p => ({ franqueados: p.franqueados.filter(x => x.id !== id), ...(p.adminSel === id ? { tela: 'adminCad', adminSel: null } : {}) }))
+      toast(`Cadastro de ${f?.nome || 'franqueado'} excluído`)
+    },
     abrirEtapa: i => {
       set({ selecionada: i })
       if (s.tela !== 'jornada') go('jornada')
@@ -275,7 +286,7 @@ export function AppProvider({ children }) {
         trocas: [{ id: novoId('tr'), data: hoje(), franqueado: f.id, beneficio: item.nome, custo: item.custo }, ...p.trocas],
         franqueados: p.franqueados.map(x => (x.id === f.id ? f : x)),
       }))
-      toast(`Troca confirmada! ${item.emoji} ${item.nome}`)
+      toast(`Troca confirmada! 🎁 ${item.nome}`)
     },
 
     // ===== Painel admin =====
@@ -414,7 +425,7 @@ export function AppProvider({ children }) {
       const custo = Math.round(Number(dados.custo)), estoque = Math.round(Number(dados.estoque))
       if (!(custo > 0)) return 'O custo precisa ser maior que zero.'
       if (!(estoque >= 0)) return 'O estoque não pode ser negativo.'
-      const item = { ...dados, nome: dados.nome.trim(), emoji: dados.emoji || '🎁', custo, estoque }
+      const item = { ...dados, nome: dados.nome.trim(), emoji: dados.emoji || 'presente', custo, estoque }
       if (idExistente) set(p => ({ beneficios: p.beneficios.map(x => (x.id === idExistente ? { ...x, ...item } : x)) }))
       else set(p => ({ beneficios: [...p.beneficios, { id: novoId('bn'), ativo: true, ...item }] }))
       toast(idExistente ? 'Benefício atualizado' : 'Benefício cadastrado')
@@ -488,6 +499,7 @@ export function AppProvider({ children }) {
       }
     },
     sair: () => { limparSessao(); setS(estadoInicial()) },
+    salvarFoto: foto => comAviso(() => chamar('salvarFoto', { foto }), foto ? 'Foto atualizada' : 'Foto removida'),
     // Primeiro acesso: grava a senha nova e abre a plataforma. Devolve a mensagem de erro, se houver.
     criarMinhaSenha: async nova => {
       set({ ocupado: true })
@@ -512,7 +524,7 @@ export function AppProvider({ children }) {
       if (!eu || eu.etapas.some(e => e.atividades.some(a => a[0] === nome && a[1] === 1))) return
       try { await chamar('concluirAtividade', { atividade: nome }); await carregar('Franqueado') } catch { /* tenta de novo na próxima vez */ }
     },
-    trocar: b => comAviso(() => chamar('trocar', { codigo: b.id }), `Troca confirmada! ${b.emoji} ${b.nome}`),
+    trocar: b => comAviso(() => chamar('trocar', { codigo: b.id }), `Troca confirmada! 🎁 ${b.nome}`),
 
     adminConquista: (email, conquista, ganhou) => comAviso(() => chamar('conquista', { email, conquista, ganhou }), `${conquista}: ${ganhou ? 'marcada' : 'desmarcada'}`),
     adminMarcar: (email, e, a, feita) => {
@@ -555,6 +567,12 @@ export function AppProvider({ children }) {
     },
     adminExcluirAula: (codigo, id) => comAviso(() => chamar('excluirAula', { id }), 'Data excluída do calendário'),
     adminSalvarRegra: (codigoTurma, entrega, regra) => comAviso(() => chamar('salvarPrazo', { codigoTurma, entrega, aulaId: regra?.aula || '', momento: regra?.momento || 'depois' })),
+    adminExcluirFranqueado: async email => {
+      const f = s.franqueados.find(x => x.id === email)
+      const erro = await gravar(() => chamar('excluirFranqueado', { email }), `Cadastro de ${f?.nome || 'franqueado'} excluído`)
+      if (erro) return toast(erro)
+      if (s.adminSel === email) set({ tela: 'adminCad', adminSel: null })
+    },
     adminSalvarFranqueado: (dados, emailAntigo) => {
       const email = dados.email.trim().toLowerCase()
       if (!dados.nome.trim() || !email.includes('@')) return 'Informe nome e um e-mail válido.'
@@ -570,7 +588,7 @@ export function AppProvider({ children }) {
       if (!(custo > 0)) return 'O custo precisa ser maior que zero.'
       if (!(estoque >= 0)) return 'O estoque não pode ser negativo.'
       const atual = s.beneficios.find(b => b.id === id)
-      return gravar(() => chamar('salvarBeneficio', { b: { codigo: id || '', nome: dados.nome.trim(), descricao: dados.descricao || '', custo, estoque, ativo: atual ? atual.ativo : true, emoji: dados.emoji || '🎁' } }),
+      return gravar(() => chamar('salvarBeneficio', { b: { codigo: id || '', nome: dados.nome.trim(), descricao: dados.descricao || '', custo, estoque, ativo: atual ? atual.ativo : true, emoji: dados.emoji || 'presente' } }),
         id ? 'Benefício atualizado' : 'Benefício cadastrado')
     },
     adminAjustarEstoque: (id, delta) => {

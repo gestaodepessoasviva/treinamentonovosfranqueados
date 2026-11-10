@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Confirmar from '../../components/Confirmar'
 import { useApp } from '../../state'
 import { FormFranqueado } from './comum'
 
@@ -31,8 +32,19 @@ function NovaTurma() {
   )
 }
 
+// Caixinha "Tem certeza?" antes de excluir um franqueado. Também usada na ficha.
+export function ConfirmarExclusao({ f, onFim, excluir }) {
+  return (
+    <Confirmar titulo="Tem certeza que deseja excluir?" onNao={onFim} onSim={() => { onFim(); excluir(f.id) }}>
+      <p>O cadastro de <b>{f.nome}</b> ({f.email}) será excluído. A pessoa perde o acesso à plataforma e sai das listas do painel.</p>
+      <p>O histórico de pontos continua guardado na planilha. Se a ideia é só pausar, use <b>Editar cadastro → Ativo: Não</b>.</p>
+    </Confirmar>
+  )
+}
+
 export default function Cadastros() {
-  const { s, adminAbrir } = useApp()
+  const { s, adminAbrir, adminExcluirFranqueado } = useApp()
+  const [excluir, setExcluir] = useState(null)
   return (
     <>
       <h1>Franqueados e turmas</h1>
@@ -57,11 +69,12 @@ export default function Cadastros() {
         {s.franqueados.map(f => (
           <div className="row" key={f.id}>
             <span><button className="lk inline" onClick={() => adminAbrir(f.id)}>{f.nome}</button>{!f.ativo && <span className="mut sm"> · inativo</span>}<br /><span className="mut sm">{f.email} · {f.franquia}{f.whatsapp && ` · ${f.whatsapp}`}</span></span>
-            <span className="mut sm">{f.turma}</span>
+            <span className="acoes"><span className="mut sm">{f.turma}</span><button className="lk inline perigo" onClick={() => setExcluir(f)}>Excluir</button></span>
           </div>
         ))}
       </section>
       <p className="mut sm">Para editar ou desativar alguém, abra a ficha da pessoa e clique em "Editar cadastro". Desativar mantém o histórico.</p>
+      {excluir && <ConfirmarExclusao f={excluir} onFim={() => setExcluir(null)} excluir={adminExcluirFranqueado} />}
     </>
   )
 }
