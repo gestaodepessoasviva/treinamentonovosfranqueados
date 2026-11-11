@@ -570,6 +570,7 @@ const ACOES_FRANQUEADO = {
     const ac = acessoDe(u.email)
     if (ac) atualizar('Acessos', ac._linha, { 'Foto': foto })
     else inserir('Acessos', { 'E-mail': u.email, 'Perfil': 'Franqueado', 'Último acesso': '', 'Foto': foto })
+    inserir('Atividades', { 'E-mail*': u.email, 'Atividade*': foto ? 'Atualizou a foto de perfil' : 'Removeu a foto de perfil', 'Data*': hojeISO(), 'Marcado por': 'Plataforma' })
     return pacoteDoFranqueado(u.email)
   },
   // Primeiro acesso: cria a senha. Depois: troca, informando a senha atual.
@@ -582,7 +583,9 @@ const ACOES_FRANQUEADO = {
     }
     const inicial = PropertiesService.getScriptProperties().getProperty('SENHA_INICIAL_HASH')
     if (inicial && senhaConfere(nova, SAL_INICIAL, inicial)) throw new Error('Escolha uma senha diferente da senha inicial.')
+    const primeira = !temSenhaPropria(u.email)
     definirSenha(u.email, nova, 'Franqueado')
+    inserir('Atividades', { 'E-mail*': u.email, 'Atividade*': primeira ? 'Criou a senha de acesso' : 'Trocou a senha de acesso', 'Data*': hojeISO(), 'Marcado por': 'Plataforma' })
     return pacoteDoFranqueado(u.email)
   },
   meusDados: u => pacoteDoFranqueado(u.email),

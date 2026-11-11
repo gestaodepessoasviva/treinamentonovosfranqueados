@@ -1,7 +1,7 @@
 // Ligação da plataforma com a planilha (Apps Script publicado como App da Web).
 // A planilha guarda os fatos (presenças, trilhas, avaliações, entregas, extras, ajustes, conquistas, trocas);
 // aqui eles viram pontos, extrato e o mapa da jornada, no mesmo formato que as telas já usam.
-import { CONQUISTAS, ENTREGAS, ETAPAS, EXTRAS, FATOR_ATRASO, REGRAS } from './data'
+import { CONQUISTAS, ENTREGAS, ETAPAS, EXTRAS, FATOR_ATRASO, NIVEIS, REGRAS } from './data'
 
 // Endereço do serviço. Não é segredo: sem login válido o serviço não entrega nada.
 const PADRAO = 'https://script.google.com/macros/s/AKfycbwDZvtmz0ACZmdlGtntZ18vxq0LUgvGJpo-z-vde8J-mScBrT2CsMr4peuB9GvugYLe/exec'
@@ -161,11 +161,35 @@ export function montarFranqueado(p, turma) {
   let marcou = false
   etapas.forEach(e => e.atividades.forEach(x => { if (x[1] !== 1) { x[1] = marcou ? 0 : 2; marcou = true } }))
 
-  // Avisos do sino: os lançamentos mais recentes. "Não lidos" = os que chegaram desde a última visita ao sino.
-  const notificacoes = extrato.slice(0, 15).map(x => ({ id: x.id, emoji: x.tipo === 'Extra' ? '🚀' : x.valor < 0 ? '🎁' : '⭐', texto: `${x.valor > 0 ? '+' : ''}${x.valor} pontos: ${x.texto}`, quando: x.data }))
+  // Notificações = histórico de tudo o que aconteceu com a pessoa, do mais recente para o mais antigo:
+  // pontos recebidos, trocas de benefícios, ajustes, conquistas, níveis e ações feitas na plataforma.
+  const eventos = []
+  const ev = (id, iso, icone, texto, detalhe = '') => eventos.push({ id, iso: String(iso || '').slice(0, 10), icone, texto, detalhe })
+  extrato.forEach(x => {
+    if (x.tipo === 'Troca') ev('p:' + x.id, x.iso, 'presente', `Você trocou ${Math.abs(x.valor)} pontos por ${x.texto.replace(/^Troca: /, '')}`)
+    else if (x.tipo === 'Ajuste') ev('p:' + x.id, x.iso, 'grafico', `Ajuste de ${x.valor > 0 ? '+' : ''}${x.valor} pontos`, x.texto.replace(/^Ajuste: /, ''))
+    else ev('p:' + x.id, x.iso, x.tipo === 'Extra' ? 'foguete' : 'estrela', `Você recebeu +${x.valor} pontos${x.tipo === 'Extra' ? ' extras' : ''}`, x.texto + (x.aula ? ' · ' + x.aula : ''))
+  })
+  p.conquistas.forEach(x => ev('c:' + (x['ID'] || x['Conquista*']), x['Data*'], 'medalha', 'Conquista desbloqueada: ' + x['Conquista*'],
+    CONQUISTAS.find(c => c.nome === x['Conquista*'])?.quando || ''))
+  const TEXTO_ATIV = { 'Primeiro acesso à plataforma': 'Seu primeiro acesso à plataforma. Boas-vindas à Jornada!', 'Ler o Guia da Jornada': 'Você abriu o Guia da Jornada',
+    'Consultar o calendário da turma': 'Você consultou o calendário da turma', 'Acessar o Academy': 'Seu acesso ao Academy foi registrado',
+    'Criou a senha de acesso': 'Você criou sua senha de acesso', 'Atualizou a foto de perfil': 'Você atualizou sua foto de perfil',
+    'Trocou a senha de acesso': 'Você trocou sua senha de acesso', 'Removeu a foto de perfil': 'Você removeu sua foto de perfil' }
+  p.atividades.forEach(x => ev('a:' + (x['ID'] || x['Atividade*']), x['Data*'], /foto de perfil/.test(x['Atividade*']) ? 'camera' : 'bandeira',
+    TEXTO_ATIV[x['Atividade*']] || 'Atividade concluída: ' + x['Atividade*']))
+  // Mudança de nível: soma os pontos em ordem de data e avisa quando passa de um corte.
+  let soma = 0, nivel = 0
+  ;[...extrato].sort((a, b) => String(a.iso).localeCompare(String(b.iso))).forEach(x => {
+    soma += x.valor
+    while (nivel < NIVEIS.length - 1 && soma >= NIVEIS[nivel + 1].min) { nivel++; ev('n:' + NIVEIS[nivel].nome, x.iso, 'trofeu', `Você subiu para o nível ${nivel + 1}: ${NIVEIS[nivel].nome}`, NIVEIS[nivel].desc) }
+  })
+  // Mais recente primeiro; no mesmo dia, a subida de nível aparece acima dos pontos que a causaram.
+  eventos.sort((a, b) => b.iso.localeCompare(a.iso) || (b.id.startsWith('n:') - a.id.startsWith('n:')))
   let vistos = []
   try { vistos = JSON.parse(localStorage.getItem('jornada-vistos:' + email) || '[]') } catch { /* nada */ }
-  const naoLidas = notificacoes.filter(n => !vistos.includes(n.id)).length
+  const notificacoes = eventos.map(x => ({ ...x, quando: quando(x.iso), nova: !vistos.includes(x.id) }))
+  const naoLidas = notificacoes.filter(n => n.nova).length
 
   return {
     id: email, email, foto: p.foto || '', nome: perfil['Nome completo*'], franquia: perfil['Cidade'] || '', uf: perfil['UF'] || '', whatsapp: perfil['WhatsApp'] || '',
@@ -177,6 +201,15 @@ export function montarFranqueado(p, turma) {
     conquistas, extras, extrato, academy, presencas: [...presencas], avaliadas: [...avaliadas],
     notificacoes, naoLidas, vistas: 0, ultimoAcesso: p.ultimoAcesso || '',
   }
+}
+
+// "hoje", "ontem" ou a data (dd/mm).
+function quando(iso) {
+  if (!iso) return ''
+  const dia = d => new Date(d + 'T12:00').getTime()
+  const hoje = new Date(); const h = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
+  const dif = Math.round((dia(h) - dia(iso)) / 864e5)
+  return dif === 0 ? 'hoje' : dif === 1 ? 'ontem' : ddmm(iso)
 }
 
 export function marcarAvisosVistos(f) {
