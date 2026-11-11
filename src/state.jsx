@@ -106,6 +106,7 @@ const novoFranqueado = (f, i) => {
       situacao: validadas[e.nome] || '',
     })),
     conquistas: [...(f.conquistas || [])],
+    gatilhos: [...(f.gatilhos || [])],
     extras: (f.extras || []).map(x => ({ id: novoId('ex'), ...x })),
     extrato: (i === 0 ? structuredClone(EXTRATO) : f.pontos ? [{ data: '—', texto: 'Saldo acumulado até hoje', valor: f.pontos, tipo: 'Programado' }] : []).map(x => ({ id: novoId('lc'), ...x })),
     notificacoes: i === 0 ? structuredClone(NOTIFICACOES) : [],
@@ -293,6 +294,14 @@ export function AppProvider({ children }) {
     adminIr: tela => { set({ tela, adminPara: null }); window.scrollTo(0, 0) },
     adminLancarPara: id => { set({ tela: 'adminLancar', adminPara: id }); window.scrollTo(0, 0) },
     adminAbrir: id => { set({ adminSel: id, tela: 'adminFranq' }); window.scrollTo(0, 0) },
+    // Marca ou desmarca um gatilho como realizado (só aparece no painel admin).
+    adminGatilho: (id, n, realizado) => {
+      const f = copiaDe(id)
+      f.gatilhos = (f.gatilhos || []).filter(g => Number(g.gatilho) !== n)
+      if (realizado) f.gatilhos.push({ gatilho: n, data: hojeISO(), por: ADMIN.email })
+      salvarFranqueado(f)
+      toast(`Gatilho ${n}: ${realizado ? 'realizado' : 'desmarcado'}`)
+    },
     // Marca ou desmarca uma conquista do franqueado.
     adminConquista: (id, nome, ganhou) => {
       const f = copiaDe(id)
@@ -458,7 +467,7 @@ export function AppProvider({ children }) {
       const d = await chamar('painel')
       const turmas = d.turmas.map(t => montarTurma(t, d.calendario.filter(a => a['Código da turma*'] === t['Código da turma*']), d.prazos.filter(p => p['Código da turma*'] === t['Código da turma*'])))
       set(p => ({
-        turmas, beneficios: d.beneficios.map(montarBeneficio),
+        turmas, beneficios: d.beneficios.map(montarBeneficio), configGatilhos: d.configGatilhos || [],
         franqueados: d.franqueados.map(pc => montarFranqueado(pc, turmas.find(t => t.codigo === pc.perfil['Código da turma*']))),
         trocas: d.trocas.map(x => ({ id: String(x['ID']), data: String(x['Data']).slice(8, 10) + '/' + String(x['Data']).slice(5, 7), franqueado: String(x['E-mail']).toLowerCase(), beneficio: x['Benefício'], custo: Number(x['Pontos']) || 0 })),
         sessao: 'admin', ...(inicio ? { tela: 'admin', adminSel: null } : { tela: p.tela }),
@@ -543,6 +552,7 @@ export function AppProvider({ children }) {
     },
     trocar: b => comAviso(() => chamar('trocar', { codigo: b.id }), `Troca confirmada! 🎁 ${b.nome}`),
 
+    adminGatilho: (email, gatilho, realizado) => comAviso(() => chamar('gatilho', { email, gatilho, realizado }), `Gatilho ${gatilho}: ${realizado ? 'realizado' : 'desmarcado'}`),
     adminConquista: (email, conquista, ganhou) => comAviso(() => chamar('conquista', { email, conquista, ganhou }), `${conquista}: ${ganhou ? 'marcada' : 'desmarcada'}`),
     adminMarcar: (email, e, a, feita) => {
       const atividade = s.franqueados.find(f => f.id === email)?.etapas[e]?.atividades[a]?.[0]

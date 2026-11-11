@@ -29,6 +29,8 @@ const ABAS = {
   'Extras': ['E-mail*', 'Ação extra*', 'Data*', 'Observação', 'ID', 'Origem', 'Lançado por', 'Lançado em'],
   'Ajustes de pontos': ['E-mail*', 'Pontos (+ ou -)*', 'Motivo*', 'Lançado por*', 'Data*', 'ID'],
   'Conquistas': ['E-mail*', 'Conquista*', 'Data*', 'Marcado por', 'ID'],
+  'Gatilhos': ['E-mail*', 'Gatilho*', 'Data*', 'Marcado por', 'ID'],
+  'Config Gatilhos': ['Gatilho*', 'Nome do gatilho*', 'Pré-requisito*', 'Etapa (1 a 4)', 'Entrega', 'Aula de', 'Aula até', 'Mínimo %'],
   'Atividades': ['E-mail*', 'Atividade*', 'Data*', 'Marcado por', 'ID'],
   'Benefícios': ['Código*', 'Nome*', 'Descrição', 'Custo em pontos*', 'Estoque*', 'Ativo*', 'Emoji'],
   'Trocas': ['ID', 'Data', 'E-mail', 'Código do benefício', 'Benefício', 'Pontos'],
@@ -74,6 +76,26 @@ const PRAZOS_INICIAIS = [
   ['Análise de concorrência', 't11-07', 'antes'], ['CNPJ e alvará', 't11-11', 'depois'],
   ['Contratação da equipe', 't11-13', 'depois'], ['Primeiras reuniões com turmas', 't11-15', 'depois'],
 ]
+// Gatilhos (painel admin): uma linha por pré-requisito. A equipe edita na aba "Config Gatilhos".
+const TIPOS_REQ = ['Trilha do Academy', 'Aulas ao vivo', 'Prova do período', 'Projeto integrador', 'Entrega', 'Nenhum']
+const GATILHOS_INICIAIS = [
+  [1, 'Participação do Treinamento de Novos Franqueados (TNF)', 'Trilha do Academy', 1, '', '', '', 100],
+  [1, 'Participação do Treinamento de Novos Franqueados (TNF)', 'Aulas ao vivo', '', '', 1, 11, 80],
+  [1, 'Participação do Treinamento de Novos Franqueados (TNF)', 'Prova do período', 1, '', '', '', ''],
+  [2, 'Inauguração presencial da franquia', 'Trilha do Academy', 2, '', '', '', 100],
+  [2, 'Inauguração presencial da franquia', 'Entrega', '', 'CNPJ e alvará', '', '', ''],
+  [2, 'Inauguração presencial da franquia', 'Entrega', '', 'Contratação da equipe', '', '', ''],
+  [2, 'Inauguração presencial da franquia', 'Entrega', '', 'Ponto comercial', '', '', ''],
+  [3, 'Participação do SAF Comercial em 2 reuniões comerciais', 'Entrega', '', 'Primeiras reuniões com turmas', '', '', ''],
+  [4, 'Início do acompanhamento SAF Relacionamento e Atendimento ao primeiro fundo', 'Trilha do Academy', 3, '', '', '', 100],
+  [4, 'Início do acompanhamento SAF Relacionamento e Atendimento ao primeiro fundo', 'Aulas ao vivo', '', '', 15, 17, 80],
+  [5, 'Acompanhamento SAF Produção no primeiro pré-evento', 'Aulas ao vivo', '', '', 18, 19, 80],
+  [6, 'Execução presencial do primeiro evento oficial', 'Projeto integrador', '', '', '', '', ''],
+  [7, 'Repasse das margens do evento para o franqueado no primeiro fechamento', 'Nenhum', '', '', '', '', ''],
+]
+const ENTREGAS_NOMES = ['Mapeamento de mercado', 'Parceiros e atléticas', 'Mapeamento de fornecedores', 'Construção e validação da OP', 'Análise de concorrência',
+  'CNPJ e alvará', 'Contratação da equipe', 'Ponto comercial', 'Primeiras reuniões com turmas']
+
 // As 4 jornadas do franqueado no Academy (uma por etapa) e a coluna de cada uma na IMPORTAÇÃO ACADEMY.
 const CONFIG_ACADEMY_INICIAL = [
   ['1. Implantação', '%_1_franq', 'Implantação'],
@@ -148,6 +170,13 @@ function prepararPlanilha() {
   if (pz.getLastRow() < 2) pz.getRange(2, 1, PRAZOS_INICIAIS.length, 4).setValues(PRAZOS_INICIAIS.map(([e, a, m]) => ['T2026-11', e, a, m]))
   const ca = ss.getSheetByName('Config Academy')
   if (ca.getLastRow() < 2) ca.getRange(2, 1, CONFIG_ACADEMY_INICIAL.length, 3).setValues(CONFIG_ACADEMY_INICIAL)
+  // Gatilhos: pré-requisitos iniciais (só se a aba estiver vazia) e listas suspensas para editar sem erro.
+  const cg = ss.getSheetByName('Config Gatilhos')
+  if (cg.getLastRow() < 2) { cg.getRange(2, 1, GATILHOS_INICIAIS.length, 8).setValues(GATILHOS_INICIAIS); feitos.push('pré-requisitos dos gatilhos carregados') }
+  const lista = valores => SpreadsheetApp.newDataValidation().requireValueInList(valores, true).setAllowInvalid(false).build()
+  cg.getRange(2, 3, cg.getMaxRows() - 1, 1).setDataValidation(lista(TIPOS_REQ))
+  cg.getRange(2, 5, cg.getMaxRows() - 1, 1).setDataValidation(lista(ENTREGAS_NOMES))
+  cg.getRange(1, 1).setNote('Uma linha por pré-requisito. Para mudar um gatilho, edite, acrescente ou apague linhas. As mudanças aparecem no painel admin no próximo carregamento.')
   // A aba de acessos fica escondida e protegida (só o dono edita).
   const ac = ss.getSheetByName('Acessos')
   ac.hideSheet()
@@ -611,7 +640,7 @@ const ACOES_ADMIN = {
   redefinirSenha: (u, { email }) => { voltarParaSenhaInicial(String(email || '').toLowerCase()); return { email } },
   painel: () => ({
     turmas: ler('Turmas').map(limpo), calendario: ler('Calendário').map(limpo), prazos: ler('Prazos das entregas').map(limpo),
-    beneficios: ler('Benefícios').map(limpo), trocas: ler('Trocas').map(limpo),
+    beneficios: ler('Benefícios').map(limpo), trocas: ler('Trocas').map(limpo), configGatilhos: ler('Config Gatilhos').map(limpo),
     franqueados: ler('Franqueados').filter(f => f['E-mail*'] && f['Perfil*'] !== 'Admin').map(f => pacoteDoFranqueado(String(f['E-mail*']).toLowerCase(), true)),
   }),
   lancar: (u, { emails, tipo, dados }) => {
@@ -626,6 +655,15 @@ const ACOES_ADMIN = {
     if (!permitidas.includes(aba)) throw new Error('Aba não permitida.')
     apagarPorId(aba, id)
     return { aba, id }
+  },
+  // Gatilho da jornada realizado (só a equipe vê). 'gatilho' = número de 1 a 7.
+  gatilho: (u, { email, gatilho, realizado }) => {
+    const n = Number(gatilho)
+    if (!(n >= 1)) throw new Error('Gatilho inválido.')
+    const atual = ler('Gatilhos').find(g => String(g['E-mail*']).toLowerCase() === email && Number(g['Gatilho*']) === n)
+    if (realizado && !atual) inserir('Gatilhos', { 'E-mail*': email, 'Gatilho*': n, 'Data*': hojeISO(), 'Marcado por': u.email })
+    if (!realizado && atual) apagarPorId('Gatilhos', atual['ID'])
+    return { email, gatilho: n }
   },
   conquista: (u, { email, conquista, ganhou }) => {
     const atual = ler('Conquistas').find(c => c['E-mail*'] === email && c['Conquista*'] === conquista)
@@ -757,6 +795,7 @@ function pacoteDoFranqueado(email, comoAdmin) {
   }
   if (!comoAdmin) pacote.beneficios = ler('Benefícios').filter(b => b['Ativo*'] !== 'Não').map(limpo)
   pacote.foto = (acessoDe(email) || {})['Foto'] || ''
+  if (comoAdmin) pacote.gatilhos = ler('Gatilhos').filter(g => String(g['E-mail*']).toLowerCase() === email).map(limpo)
   if (comoAdmin) pacote.ultimoAcesso = iso((acessoDe(email) || {})['Último acesso'] || '')
   return pacote
 }

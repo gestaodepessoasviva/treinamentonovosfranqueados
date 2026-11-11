@@ -320,3 +320,10 @@ a.go2{display:inline-block;text-decoration:none}
 .nt-ic{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--tealb);color:var(--teal)}
 .nt.new .nt-ic{background:linear-gradient(135deg,#ff9a4d,#d94e00);color:#fff}
 .nt.new{border-left:5px solid var(--teal)}
+
+/* Admin: gatilhos */
+.gat-tab td,.gat-tab th{text-align:center;white-space:nowrap}
+.gat-tab td:first-child,.gat-tab th:first-child{text-align:left}
+.gat-tab .chip{border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:800;padding:3px 10px;border-radius:12px}
+.gat-tab .chip.cr{background:var(--teal);color:#fff}.gat-tab .chip.cv{background:#e3f6e8;color:#1b7a3a}.gat-tab .chip.cp{background:var(--tealb);color:#b84300}.gat-tab .chip.cl{background:var(--line);color:var(--mut)}
+.gat-tab .chip.sel{outline:3px solid var(--gold);outline-offset:1px}

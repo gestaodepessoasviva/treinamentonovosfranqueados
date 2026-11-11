@@ -9,6 +9,7 @@ import Exportar from './pages/admin/Exportar'
 import Ficha from './pages/admin/Ficha'
 import Painel from './pages/admin/Painel'
 import Lancar from './pages/admin/Lancar'
+import Gatilhos from './pages/admin/Gatilhos'
 import Beneficios from './pages/Beneficios'
 import CalendarioTurma from './pages/Calendario'
 import Conquistas from './pages/Conquistas'
@@ -22,8 +23,8 @@ import Pontos from './pages/Pontos'
 import { useApp } from './state'
 
 const TELAS = { inicio: Inicio, jornada: Jornada, pontos: Pontos, benef: Beneficios, conq: Conquistas, notif: Notificacoes, guia: Guia, calendario: CalendarioTurma, perfil: Perfil }
-const TELAS_ADMIN = { admin: Painel, adminFranq: Ficha, adminLancar: Lancar, adminCad: Cadastros, adminCal: Calendario, adminBenef: AdminBeneficios, adminExp: Exportar }
-const ABAS_ADMIN = [['admin', '📊 Painel'], ['adminLancar', '⭐ Lançar pontos'], ['adminCad', '👥 Cadastros'], ['adminCal', '📅 Calendário'], ['adminBenef', '🎁 Benefícios'], ['adminExp', '⬇️ Exportar']]
+const TELAS_ADMIN = { admin: Painel, adminFranq: Ficha, adminLancar: Lancar, adminGat: Gatilhos, adminCad: Cadastros, adminCal: Calendario, adminBenef: AdminBeneficios, adminExp: Exportar }
+const ABAS_ADMIN = [['admin', '📊 Painel'], ['adminLancar', '⭐ Lançar pontos'], ['adminGat', '🎯 Gatilhos'], ['adminCad', '👥 Cadastros'], ['adminCal', '📅 Calendário'], ['adminBenef', '🎁 Benefícios'], ['adminExp', '⬇️ Exportar']]
 
 function Admin() {
   const { s, sair, adminIr } = useApp()

@@ -85,3 +85,20 @@ Clique em **🗄️ Banco → 5. Criar ou trocar a senha de um admin**, informe 
 
 ## 9. Por último: fechar o compartilhamento
 Depois que tudo estiver funcionando, deixe a planilha como **Restrita**, compartilhada só com T&D e Expansão. A plataforma continua funcionando, porque o script roda com a sua conta.
+
+## 10. Gatilhos da jornada (só no painel admin)
+O painel admin tem a aba **🎯 Gatilhos**, com os 7 marcos presenciais (TNF, Inauguração, SAF Comercial, SAF Relacionamento, SAF Produção, 1º evento e Repasse das margens). Para cada franqueado, ela mostra se o gatilho está **Apto**, **Pendente** (com o que falta) ou **✓ Realizado**. Cada gatilho só fica disponível depois do anterior. A equipe marca quando o gatilho acontece; a marcação fica na aba **Gatilhos**. Os franqueados não veem essa tela.
+
+**Para mudar os pré-requisitos**, edite a aba **Config Gatilhos**. Cada linha é um pré-requisito:
+
+| Coluna | O que preencher |
+|---|---|
+| Gatilho* | Número do gatilho (1 a 7) |
+| Nome do gatilho* | Nome que aparece no painel |
+| Pré-requisito* | Trilha do Academy · Aulas ao vivo · Prova do período · Projeto integrador · Entrega · Nenhum |
+| Etapa (1 a 4) | Para Trilha do Academy (1 Implantação, 2 Inauguração, 3 Primeiro Fundo, 4 Ativação) ou Prova do período (1, 2 ou 3) |
+| Entrega | Para Entrega: escolha na lista |
+| Aula de / Aula até | Para Aulas ao vivo: números das aulas (ex.: 1 e 11) |
+| Mínimo % | Para Trilha do Academy ou Aulas ao vivo (ex.: 80) |
+
+Para acrescentar um pré-requisito, crie uma linha com o mesmo número do gatilho. Para tirar, apague a linha. As mudanças aparecem no painel na próxima vez que ele carregar.

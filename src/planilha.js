@@ -199,6 +199,7 @@ export function montarFranqueado(p, turma) {
     etapas,
     entregas: ENTREGAS.map(e => ({ nome: e.nome, status: entregasFeitas[e.nome] ? 'validada' : 'pendente', situacao: entregasFeitas[e.nome]?.situacao || '', concluidaEm: entregasFeitas[e.nome]?.concluidaEm || '', lancamento: entregasFeitas[e.nome]?.lancamento || '' })),
     conquistas, extras, extrato, academy, presencas: [...presencas], avaliadas: [...avaliadas],
+    gatilhos: (p.gatilhos || []).map(x => ({ gatilho: Number(x['Gatilho*']), data: x['Data*'], por: x['Marcado por'] || '', id: String(x['ID'] || '') })),
     notificacoes, naoLidas, vistas: 0, ultimoAcesso: p.ultimoAcesso || '',
   }
 }
