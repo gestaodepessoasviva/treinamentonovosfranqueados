@@ -38,8 +38,8 @@ export default function Beneficios() {
               const bloqueado = esgotado || falta
               return (
                 <article className={`bn ${bloqueado ? 'off' : ''}`} key={b.id}>
-                  <div className={`bn-capa ${FUNDOS[i % FUNDOS.length]}`}>
-                    <Icone nome={b.emoji} />
+                  <div className={`bn-capa ${b.foto ? 'com-foto' : FUNDOS[i % FUNDOS.length]}`}>
+                    {b.foto ? <img src={b.foto} alt="" /> : <Icone nome={b.emoji} />}
                     <span className="bn-pts">{fmt(b.custo)} pts</span>
                   </div>
                   <div className="bn-cx">

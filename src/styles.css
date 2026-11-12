@@ -327,3 +327,14 @@ a.go2{display:inline-block;text-decoration:none}
 .gat-tab .chip{border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:800;padding:3px 10px;border-radius:12px}
 .gat-tab .chip.cr{background:var(--teal);color:#fff}.gat-tab .chip.cv{background:#e3f6e8;color:#1b7a3a}.gat-tab .chip.cp{background:var(--tealb);color:#b84300}.gat-tab .chip.cl{background:var(--line);color:var(--mut)}
 .gat-tab .chip.sel{outline:3px solid var(--gold);outline-offset:1px}
+
+/* Benefícios com foto */
+.bn-capa.com-foto{background:#ddd;overflow:hidden}
+.bn-capa.com-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bn.off .bn-capa.com-foto img{filter:grayscale(1);opacity:.6}
+.bn-capa .bn-pts{z-index:1}
+.bn-modo{max-width:260px;height:38px}
+.bn-foto-esc{margin-top:8px}
+.bn-foto-prev{width:240px;aspect-ratio:16/9;border:2px dashed var(--line);border-radius:12px;display:grid;place-items:center;overflow:hidden;cursor:pointer;background:var(--bg)}
+.bn-foto-prev img{width:100%;height:100%;object-fit:cover}
+.bn-mini{width:44px;height:26px;object-fit:cover;border-radius:6px;vertical-align:middle}

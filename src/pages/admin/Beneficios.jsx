@@ -1,20 +1,30 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { prepararImagem } from '../../components/Avatar'
 import Confirmar from '../../components/Confirmar'
 import Icone, { chaveIcone, ICONES } from '../../components/Icone'
 import { fmt } from '../../data'
 import { useApp } from '../../state'
 
-const VAZIO = { emoji: 'presente', nome: '', descricao: '', custo: '', estoque: '' }
+const VAZIO = { emoji: 'presente', foto: '', nome: '', descricao: '', custo: '', estoque: '' }
 
 function FormBeneficio({ inicial, onPronto }) {
   const { adminSalvarBeneficio, toast } = useApp()
-  const [b, setB] = useState(inicial ? { emoji: chaveIcone(inicial.emoji), nome: inicial.nome, descricao: inicial.descricao || '', custo: inicial.custo, estoque: inicial.estoque } : VAZIO)
+  const [b, setB] = useState(inicial ? { emoji: chaveIcone(inicial.emoji), foto: inicial.foto || '', nome: inicial.nome, descricao: inicial.descricao || '', custo: inicial.custo, estoque: inicial.estoque } : VAZIO)
   const campo = k => e => setB({ ...b, [k]: e.target.value })
+  const [modo, setModo] = useState(inicial?.foto ? 'foto' : 'icone')
+  const arquivo = useRef(null)
+  const escolherFoto = async e => {
+    const f = e.target.files?.[0]
+    e.target.value = ''
+    if (!f) return
+    try { setB(x => ({ ...x, foto: '' })); const foto = await prepararImagem(f, 16 / 9, 480); setB(x => ({ ...x, foto })) } catch (err) { toast(err.message) }
+  }
   const salvar = async e => {
     e.preventDefault()
-    const erro = await adminSalvarBeneficio(b, inicial?.id)
+    if (modo === 'foto' && !b.foto) return toast('Escolha uma foto ou volte para "Ícone".')
+    const erro = await adminSalvarBeneficio({ ...b, foto: modo === 'foto' ? b.foto : '' }, inicial?.id)
     if (erro) return toast(erro)
-    if (!inicial) setB(VAZIO)
+    if (!inicial) { setB(VAZIO); setModo('icone') }
     onPronto?.()
   }
   return (
@@ -26,12 +36,32 @@ function FormBeneficio({ inicial, onPronto }) {
         <label>Custo em pontos<input type="number" min="1" step="1" value={b.custo} onChange={campo('custo')} /></label>
         <label>{inicial ? 'Estoque' : 'Estoque inicial'}<input type="number" min="0" step="1" value={b.estoque} onChange={campo('estoque')} /></label>
       </div>
-      <div className="mut sm" style={{ marginTop: 10 }}>Ícone: <b>{ICONES[b.emoji].nome}</b></div>
-      <div className="ic-esc" role="radiogroup" aria-label="Ícone do benefício">
-        {Object.entries(ICONES).map(([k, ic]) => (
-          <button type="button" key={k} role="radio" aria-checked={b.emoji === k} title={ic.nome} className={b.emoji === k ? 'on' : ''} onClick={() => setB({ ...b, emoji: k })}><Icone nome={k} tamanho={24} /></button>
-        ))}
+      <div className="mut sm" style={{ marginTop: 10 }}>Imagem do benefício na vitrine</div>
+      <div className="seg2 bn-modo" role="radiogroup" aria-label="Imagem do benefício">
+        <button type="button" role="radio" aria-checked={modo === 'icone'} className={modo === 'icone' ? 'on' : ''} onClick={() => setModo('icone')}>Ícone</button>
+        <button type="button" role="radio" aria-checked={modo === 'foto'} className={modo === 'foto' ? 'on' : ''} onClick={() => setModo('foto')}>Foto</button>
       </div>
+      {modo === 'icone' && <>
+        <div className="mut sm" style={{ marginTop: 8 }}>Ícone: <b>{ICONES[b.emoji].nome}</b></div>
+        <div className="ic-esc" role="radiogroup" aria-label="Ícone do benefício">
+          {Object.entries(ICONES).map(([k, ic]) => (
+            <button type="button" key={k} role="radio" aria-checked={b.emoji === k} title={ic.nome} className={b.emoji === k ? 'on' : ''} onClick={() => setB({ ...b, emoji: k })}><Icone nome={k} tamanho={24} /></button>
+          ))}
+        </div>
+      </>}
+      {modo === 'foto' && (
+        <div className="bn-foto-esc">
+          <div className="bn-foto-prev" onClick={() => arquivo.current?.click()}>
+            {b.foto ? <img src={b.foto} alt="" /> : <span className="mut sm">Clique para escolher uma foto</span>}
+          </div>
+          <div className="acoes">
+            <button type="button" className="lk inline" onClick={() => arquivo.current?.click()}>{b.foto ? 'Trocar foto' : 'Escolher foto'}</button>
+            {b.foto && <button type="button" className="lk inline perigo" onClick={() => setB({ ...b, foto: '' })}>Remover</button>}
+          </div>
+          <div className="mut sm">JPG ou PNG. A foto é recortada no formato da vitrine (retângulo) e reduzida automaticamente.</div>
+          <input ref={arquivo} type="file" accept="image/*" style={{ display: 'none' }} onChange={escolherFoto} />
+        </div>
+      )}
       <button className="go" type="submit">{inicial ? 'Salvar' : 'Cadastrar benefício'}</button>
     </form>
   )
@@ -54,7 +84,7 @@ export default function Beneficios() {
       {s.beneficios.map(b => (
         <section key={b.id} className={`card ${b.ativo ? '' : 'inativo'}`}>
           <div className="row quebra">
-            <span><span className="em" style={{ color: 'var(--teal)', verticalAlign: 'middle' }}><Icone nome={b.emoji} tamanho={24} /></span> <b>{b.nome}</b>{!b.ativo && <span className="mut sm"> · fora do catálogo</span>}<br />
+            <span>{b.foto ? <img className="bn-mini" src={b.foto} alt="" /> : <span className="em" style={{ color: 'var(--teal)', verticalAlign: 'middle' }}><Icone nome={b.emoji} tamanho={24} /></span>} <b>{b.nome}</b>{!b.ativo && <span className="mut sm"> · fora do catálogo</span>}<br />
               <span className="mut sm">{fmt(b.custo)} pontos{b.descricao && ` · ${b.descricao}`}</span></span>
             <span className="acoes">
               <button className="mini" onClick={() => adminAjustarEstoque(b.id, -1)} aria-label="Tirar 1 do estoque">−</button>

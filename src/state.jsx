@@ -434,7 +434,7 @@ export function AppProvider({ children }) {
       const custo = Math.round(Number(dados.custo)), estoque = Math.round(Number(dados.estoque))
       if (!(custo > 0)) return 'O custo precisa ser maior que zero.'
       if (!(estoque >= 0)) return 'O estoque não pode ser negativo.'
-      const item = { ...dados, nome: dados.nome.trim(), emoji: dados.emoji || 'presente', custo, estoque }
+      const item = { ...dados, nome: dados.nome.trim(), emoji: dados.emoji || 'presente', foto: dados.foto || '', custo, estoque }
       if (idExistente) set(p => ({ beneficios: p.beneficios.map(x => (x.id === idExistente ? { ...x, ...item } : x)) }))
       else set(p => ({ beneficios: [...p.beneficios, { id: novoId('bn'), ativo: true, ...item }] }))
       toast(idExistente ? 'Benefício atualizado' : 'Benefício cadastrado')
@@ -615,7 +615,7 @@ export function AppProvider({ children }) {
       if (!(custo > 0)) return 'O custo precisa ser maior que zero.'
       if (!(estoque >= 0)) return 'O estoque não pode ser negativo.'
       const atual = s.beneficios.find(b => b.id === id)
-      return gravar(() => chamar('salvarBeneficio', { b: { codigo: id || '', nome: dados.nome.trim(), descricao: dados.descricao || '', custo, estoque, ativo: atual ? atual.ativo : true, emoji: dados.emoji || 'presente' } }),
+      return gravar(() => chamar('salvarBeneficio', { b: { codigo: id || '', nome: dados.nome.trim(), descricao: dados.descricao || '', custo, estoque, ativo: atual ? atual.ativo : true, emoji: dados.emoji || 'presente', foto: dados.foto || '' } }),
         id ? 'Benefício atualizado' : 'Benefício cadastrado')
     },
     adminAjustarEstoque: (id, delta) => {

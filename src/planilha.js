@@ -67,7 +67,7 @@ export function montarTurma(t, calendario, prazos) {
 
 export const montarBeneficio = b => ({
   id: String(b['Código*']), nome: b['Nome*'], descricao: b['Descrição'] || '', custo: Number(b['Custo em pontos*']) || 0,
-  estoque: Number(b['Estoque*']) || 0, ativo: !/^n[aã]o$/i.test(String(b['Ativo*'] || '')), emoji: b['Emoji'] || 'presente',
+  estoque: Number(b['Estoque*']) || 0, ativo: !/^n[aã]o$/i.test(String(b['Ativo*'] || '')), emoji: b['Emoji'] || 'presente', foto: b['Foto'] || '',
 })
 
 // Um franqueado a partir do "pacote" que o serviço devolve.

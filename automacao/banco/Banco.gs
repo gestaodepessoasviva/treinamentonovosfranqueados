@@ -32,7 +32,7 @@ const ABAS = {
   'Gatilhos': ['E-mail*', 'Gatilho*', 'Data*', 'Marcado por', 'ID'],
   'Config Gatilhos': ['Gatilho*', 'Nome do gatilho*', 'Pré-requisito*', 'Etapa (1 a 4)', 'Entrega', 'Aula de', 'Aula até', 'Mínimo %'],
   'Atividades': ['E-mail*', 'Atividade*', 'Data*', 'Marcado por', 'ID'],
-  'Benefícios': ['Código*', 'Nome*', 'Descrição', 'Custo em pontos*', 'Estoque*', 'Ativo*', 'Emoji'],
+  'Benefícios': ['Código*', 'Nome*', 'Descrição', 'Custo em pontos*', 'Estoque*', 'Ativo*', 'Emoji', 'Foto'],
   'Trocas': ['ID', 'Data', 'E-mail', 'Código do benefício', 'Benefício', 'Pontos'],
   'Progresso Academy': ['E-mail', 'Trilha', '% concluído', 'Atualizado em'],
   'Config Academy': ['Trilha*', 'Coluna na IMPORTAÇÃO ACADEMY*', 'Etapa', 'Prazo'],
@@ -745,7 +745,9 @@ const ACOES_ADMIN = {
     return ler('Benefícios').map(limpo)
   },
   salvarBeneficio: (u, { b }) => {
-    const linha = { 'Código*': b.codigo || novoId(), 'Nome*': b.nome, 'Descrição': b.descricao || '', 'Custo em pontos*': Number(b.custo), 'Estoque*': Number(b.estoque), 'Ativo*': b.ativo === false ? 'Não' : 'Sim', 'Emoji': b.emoji || 'presente' }
+    const foto = String(b.foto || '')
+    if (foto && (!/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(foto) || foto.length > 48000)) throw new Error('Foto inválida ou grande demais. Tente outra imagem.')
+    const linha = { 'Foto': foto, 'Código*': b.codigo || novoId(), 'Nome*': b.nome, 'Descrição': b.descricao || '', 'Custo em pontos*': Number(b.custo), 'Estoque*': Number(b.estoque), 'Ativo*': b.ativo === false ? 'Não' : 'Sim', 'Emoji': b.emoji || 'presente' }
     const atual = ler('Benefícios').find(x => x['Código*'] === linha['Código*'])
     if (atual) atualizar('Benefícios', atual._linha, linha)
     else inserir('Benefícios', linha)
